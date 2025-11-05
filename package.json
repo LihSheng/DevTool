@@ -1,0 +1,13 @@
+{
+  "name": "dev-tools",
+  "version": "1.0.0",
+  "description": "Clean utilities for developers - JSON Formatter & Laravel QueryLog Analyzer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["dev-tools", "json", "laravel", "querylog", "analyzer"],
+  "author": "LihSheng",
+  "license": "MIT"
+}
