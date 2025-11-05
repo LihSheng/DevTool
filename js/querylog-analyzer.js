@@ -10,6 +10,7 @@ class QueryLogAnalyzer {
         this.analyzeBtn = document.getElementById('analyze-queries');
         this.clearBtn = document.getElementById('clear-querylog');
         this.statusDiv = document.getElementById('querylog-status');
+        this.bindValuesToggle = document.getElementById('bind-values-toggle');
 
         // Stats elements
         this.totalQueriesEl = document.getElementById('total-queries');
@@ -17,11 +18,15 @@ class QueryLogAnalyzer {
         this.avgTimeEl = document.getElementById('avg-time');
         this.slowestTimeEl = document.getElementById('slowest-time');
         this.queriesTableEl = document.getElementById('queries-table');
+
+        // Store current analysis for re-rendering
+        this.currentAnalysis = null;
     }
 
     bindEvents() {
         this.analyzeBtn.addEventListener('click', () => this.analyzeQueries());
         this.clearBtn.addEventListener('click', () => this.clearAll());
+        this.bindValuesToggle.addEventListener('change', () => this.toggleBindValues());
     }
 
     analyzeQueries() {
@@ -98,18 +103,42 @@ class QueryLogAnalyzer {
     parseEnhancedPHPArray(input) {
         const queries = [];
 
-        // Enhanced regex patterns to handle the complex format
-        // Match each array element: 0 => array ('query' => '...', 'bindings' => array(...), 'time' => 2.44,)
-        const arrayElementRegex = /(\d+)\s*=>\s*array\s*\(\s*'query'\s*=>\s*'([^']*(?:\\'[^']*)*)'\s*,\s*'bindings'\s*=>\s*array\s*\([^)]*\)\s*,\s*'time'\s*=>\s*([\d.]+)\s*,\s*\)/g;
+        // Enhanced regex to capture bindings as well
+        const arrayElementRegex = /(\d+)\s*=>\s*array\s*\(\s*'query'\s*=>\s*'([^']*(?:\\'[^']*)*)'\s*,\s*'bindings'\s*=>\s*array\s*\(([^)]*)\)\s*,\s*'time'\s*=>\s*([\d.]+)\s*,\s*\)/g;
 
         let match;
         while ((match = arrayElementRegex.exec(input)) !== null) {
-            const [, index, query, time] = match;
+            const [, index, query, bindingsStr, time] = match;
+
+            // Parse bindings
+            let bindings = [];
+            if (bindingsStr.trim()) {
+                // Extract individual binding values
+                const bindingMatches = bindingsStr.match(/(?:\d+\s*=>\s*)?(?:'([^']*)'|"([^"]*)"|(\d+(?:\.\d+)?)|(\w+::\w+\([^)]*\)))/g);
+                if (bindingMatches) {
+                    bindings = bindingMatches.map(binding => {
+                        // Handle different binding formats
+                        if (binding.includes("'")) {
+                            return binding.match(/'([^']*)'/)[1];
+                        } else if (binding.includes('"')) {
+                            return binding.match(/"([^"]*)"/)[1];
+                        } else if (binding.includes('::')) {
+                            // Handle Laravel Expression objects like Illuminate\Database\Query\Expression::__set_state
+                            const valueMatch = binding.match(/value.*?(\d+)/);
+                            return valueMatch ? valueMatch[1] : binding;
+                        } else {
+                            // Handle numeric values or simple strings
+                            const valueMatch = binding.match(/(?:\d+\s*=>\s*)?(.+)/);
+                            return valueMatch ? valueMatch[1].trim() : binding;
+                        }
+                    });
+                }
+            }
 
             queries.push({
                 query: query.replace(/\\'/g, "'"), // Unescape single quotes
                 time: parseFloat(time),
-                bindings: [], // We'll extract bindings separately if needed
+                bindings: bindings,
                 index: parseInt(index)
             });
         }
@@ -151,11 +180,26 @@ class QueryLogAnalyzer {
                 currentQuery.time = parseFloat(timeMatch[1]);
             }
 
-            // Extract bindings (optional)
-            const bindingsMatch = line.match(/['"]bindings['"] *=> *(\[.*?\])/);
+            // Extract bindings (optional) - handle both array and object formats
+            const bindingsMatch = line.match(/['"]bindings['"] *=> *(array\s*\([^)]*\)|\[.*?\])/);
             if (bindingsMatch) {
                 try {
-                    currentQuery.bindings = JSON.parse(bindingsMatch[1].replace(/'/g, '"'));
+                    let bindingsStr = bindingsMatch[1];
+                    if (bindingsStr.startsWith('array')) {
+                        // Parse PHP array format: array(0 => '2',)
+                        const values = [];
+                        const valueMatches = bindingsStr.match(/(?:\d+\s*=>\s*)?['"]([^'"]*)['"]/g);
+                        if (valueMatches) {
+                            valueMatches.forEach(match => {
+                                const value = match.match(/['"]([^'"]*)['"]/);
+                                if (value) values.push(value[1]);
+                            });
+                        }
+                        currentQuery.bindings = values;
+                    } else {
+                        // JSON array format
+                        currentQuery.bindings = JSON.parse(bindingsStr.replace(/'/g, '"'));
+                    }
                 } catch (e) {
                     currentQuery.bindings = [];
                 }
@@ -207,6 +251,9 @@ class QueryLogAnalyzer {
     }
 
     displayResults(analysis) {
+        // Store analysis for toggle functionality
+        this.currentAnalysis = analysis;
+
         // Update stats cards
         this.totalQueriesEl.textContent = analysis.totalQueries;
         this.totalTimeEl.textContent = `${analysis.totalTime.toFixed(2)}ms`;
@@ -243,6 +290,7 @@ class QueryLogAnalyzer {
                     <div class="header-cell">SQL Query</div>
                     <div class="header-cell">Time</div>
                     <div class="header-cell">% of Total</div>
+                    <div class="header-cell">Action</div>
                 </div>
                 ${queries.map((query, index) => {
             const percentage = ((query.time / analysis.totalTime) * 100).toFixed(1);
@@ -251,9 +299,14 @@ class QueryLogAnalyzer {
                         <div class="query-row ${isSlowiest ? 'slowest-query' : ''}">
                             <div class="query-rank">${index + 1}</div>
                             <div class="query-index">#${query.originalIndex || query.index + 1}</div>
-                            <div class="query-sql">${this.formatSQL(query.query)}</div>
+                            <div class="query-sql">${this.formatSQL(query.query, query.bindings)}</div>
                             <div class="query-time ${this.getTimeClass(query.time)}">${query.time.toFixed(2)}ms</div>
                             <div class="query-percentage">${percentage}%</div>
+                            <div class="query-action">
+                                <button class="copy-query-btn" data-query-index="${index}" title="Copy query to clipboard">
+                                    📋
+                                </button>
+                            </div>
                         </div>
                     `;
         }).join('')}
@@ -261,14 +314,127 @@ class QueryLogAnalyzer {
         `;
 
         this.queriesTableEl.innerHTML = summaryHTML + tableHTML;
+
+        // Add event listeners for copy buttons
+        this.addCopyButtonListeners(queries);
     }
 
-    formatSQL(sql) {
+    formatSQL(sql, bindings = []) {
+        let formattedSQL = sql;
+
+        // If toggle is on and we have bindings, replace ? with actual values
+        if (this.bindValuesToggle && this.bindValuesToggle.checked && bindings && bindings.length > 0) {
+            formattedSQL = this.bindQueryValues(sql, bindings);
+        }
+
         // Basic SQL formatting for better readability
-        return sql
+        return formattedSQL
             .replace(/\s+/g, ' ') // Normalize whitespace
-            .replace(/\b(SELECT|FROM|WHERE|JOIN|LEFT JOIN|RIGHT JOIN|INNER JOIN|ORDER BY|GROUP BY|HAVING|LIMIT)\b/gi, '<strong>$1</strong>')
+            .replace(/\b(SELECT|FROM|WHERE|JOIN|LEFT JOIN|RIGHT JOIN|INNER JOIN|ORDER BY|GROUP BY|HAVING|LIMIT|INSERT|UPDATE|DELETE|AND|OR|IN|NOT|NULL|IS|LIKE|BETWEEN)\b/gi, '<strong>$1</strong>')
             .trim();
+    }
+
+    bindQueryValues(sql, bindings) {
+        if (!bindings || bindings.length === 0) {
+            return sql;
+        }
+
+        let boundSQL = sql;
+        let bindingIndex = 0;
+
+        // Replace ? placeholders with actual values
+        boundSQL = boundSQL.replace(/\?/g, () => {
+            if (bindingIndex < bindings.length) {
+                const value = bindings[bindingIndex++];
+                // Add quotes around string values, keep numbers as-is
+                if (isNaN(value) && value !== 'null' && value !== 'NULL') {
+                    return `'${value}'`;
+                }
+                return value;
+            }
+            return '?'; // Keep ? if no more bindings
+        });
+
+        return boundSQL;
+    }
+
+    toggleBindValues() {
+        // Re-render the table with current analysis if available
+        if (this.currentAnalysis) {
+            this.generateQueriesTable(this.currentAnalysis.sortedQueries, this.currentAnalysis);
+        }
+    }
+
+    getQueryForCopy(sql, bindings = []) {
+        // Return the query based on toggle state
+        if (this.bindValuesToggle && this.bindValuesToggle.checked && bindings && bindings.length > 0) {
+            return this.bindQueryValues(sql, bindings);
+        }
+        return sql;
+    }
+
+
+
+    addCopyButtonListeners(queries) {
+        // Remove existing listeners to prevent duplicates
+        const copyButtons = this.queriesTableEl.querySelectorAll('.copy-query-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const queryIndex = parseInt(e.target.getAttribute('data-query-index'));
+                const query = queries[queryIndex];
+                if (query) {
+                    this.copyQuery(query, queryIndex);
+                }
+            });
+        });
+    }
+
+    async copyQuery(queryObj, index) {
+        // Get the query text based on current toggle state
+        const queryText = this.getQueryForCopy(queryObj.query, queryObj.bindings);
+
+        try {
+            await navigator.clipboard.writeText(queryText);
+            this.showCopyNotification(`Query #${index + 1} copied to clipboard!`);
+        } catch (error) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = queryText;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            this.showCopyNotification(`Query #${index + 1} copied to clipboard!`);
+        }
+    }
+
+    showCopyNotification(message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'copy-notification';
+        notification.textContent = message;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Trigger animation
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 
     getTimeClass(time) {
