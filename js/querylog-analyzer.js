@@ -11,6 +11,7 @@ class QueryLogAnalyzer {
         this.clearBtn = document.getElementById('clear-querylog');
         this.statusDiv = document.getElementById('querylog-status');
         this.bindValuesToggle = document.getElementById('bind-values-toggle');
+        this.sortByTimeToggle = document.getElementById('sort-by-time-toggle');
 
         // Stats elements
         this.totalQueriesEl = document.getElementById('total-queries');
@@ -27,6 +28,7 @@ class QueryLogAnalyzer {
         this.analyzeBtn.addEventListener('click', () => this.analyzeQueries());
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.bindValuesToggle.addEventListener('change', () => this.toggleBindValues());
+        this.sortByTimeToggle.addEventListener('change', () => this.toggleSortByTime());
     }
 
     analyzeQueries() {
@@ -223,14 +225,15 @@ class QueryLogAnalyzer {
         const slowestTime = Math.max(...times);
         const fastestTime = Math.min(...times);
 
+        // Prepare queries with original index
+        const queriesWithIndex = queries.map((query, index) => ({
+            ...query,
+            originalIndex: index + 1,
+            time: parseFloat(query.time) || 0
+        }));
+
         // Sort queries by time (slowest first)
-        const sortedQueries = queries
-            .map((query, index) => ({
-                ...query,
-                originalIndex: index + 1,
-                time: parseFloat(query.time) || 0
-            }))
-            .sort((a, b) => b.time - a.time);
+        const sortedQueries = [...queriesWithIndex].sort((a, b) => b.time - a.time);
 
         // Categorize queries by performance
         const slowQueries = sortedQueries.filter(q => q.time > 100); // > 100ms
@@ -243,6 +246,7 @@ class QueryLogAnalyzer {
             avgTime,
             slowestTime,
             fastestTime,
+            originalQueries: queriesWithIndex,
             sortedQueries,
             slowQueries,
             mediumQueries,
@@ -261,7 +265,8 @@ class QueryLogAnalyzer {
         this.slowestTimeEl.textContent = `${analysis.slowestTime.toFixed(2)}ms`;
 
         // Generate queries table with enhanced information
-        this.generateQueriesTable(analysis.sortedQueries, analysis);
+        const queriesToDisplay = this.sortByTimeToggle.checked ? analysis.sortedQueries : analysis.originalQueries;
+        this.generateQueriesTable(queriesToDisplay, analysis);
     }
 
     generateQueriesTable(queries, analysis) {
@@ -285,7 +290,7 @@ class QueryLogAnalyzer {
         const tableHTML = `
             <div class="queries-table">
                 <div class="table-header">
-                    <div class="header-cell">Rank</div>
+                    <div class="header-cell">${this.sortByTimeToggle.checked ? 'Rank' : 'Order'}</div>
                     <div class="header-cell">Original #</div>
                     <div class="header-cell">SQL Query</div>
                     <div class="header-cell">Time</div>
@@ -296,7 +301,7 @@ class QueryLogAnalyzer {
             const percentage = ((query.time / analysis.totalTime) * 100).toFixed(1);
             const isSlowiest = index === 0;
             return `
-                        <div class="query-row ${isSlowiest ? 'slowest-query' : ''}">
+                        <div class="query-row ${isSlowiest && this.sortByTimeToggle.checked ? 'slowest-query' : ''}">
                             <div class="query-rank">${index + 1}</div>
                             <div class="query-index">#${query.originalIndex || query.index + 1}</div>
                             <div class="query-sql">${this.formatSQL(query.query, query.bindings)}</div>
@@ -361,7 +366,16 @@ class QueryLogAnalyzer {
     toggleBindValues() {
         // Re-render the table with current analysis if available
         if (this.currentAnalysis) {
-            this.generateQueriesTable(this.currentAnalysis.sortedQueries, this.currentAnalysis);
+            const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
+            this.generateQueriesTable(queriesToDisplay, this.currentAnalysis);
+        }
+    }
+
+    toggleSortByTime() {
+        // Re-render the table with current analysis if available
+        if (this.currentAnalysis) {
+            const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
+            this.generateQueriesTable(queriesToDisplay, this.currentAnalysis);
         }
     }
 
@@ -444,13 +458,29 @@ class QueryLogAnalyzer {
     }
 
     clearAll() {
+        // Clear input
         this.querylogInput.value = '';
+
+        // Reset stats
         this.totalQueriesEl.textContent = '0';
         this.totalTimeEl.textContent = '0ms';
         this.avgTimeEl.textContent = '0ms';
         this.slowestTimeEl.textContent = '0ms';
+
+        // Clear query details table
         this.queriesTableEl.innerHTML = '';
+
+        // Reset toggles to default (ON)
+        this.bindValuesToggle.checked = true;
+        this.sortByTimeToggle.checked = true;
+
+        // Clear stored analysis
+        this.currentAnalysis = null;
+
+        // Hide status messages
         this.hideStatus();
+
+        // Focus back to input
         this.querylogInput.focus();
     }
 
