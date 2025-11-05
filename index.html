@@ -1,30 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dev Tools - JSON Formatter & QueryLog Analyzer</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>🛠️ Dev Tools</h1>
-            <p>Clean utilities for developers</p>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🛠️ Dev Tools</h1>
+                    <p>Clean utilities for developers</p>
+                </div>
+                <div class="header-controls">
+                    <label class="toggle-switch dark-mode-toggle">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="slider"></span>
+                        <span class="toggle-label">🌙 Dark Mode</span>
+                    </label>
+                </div>
+            </div>
         </header>
 
         <nav class="tool-nav">
-            <button class="nav-btn active" data-tool="json-formatter">JSON Formatter</button>
-            <button class="nav-btn" data-tool="querylog-analyzer">QueryLog Analyzer</button>
+            <button class="nav-btn" data-tool="json-formatter">JSON Formatter</button>
+            <button class="nav-btn active" data-tool="querylog-analyzer">QueryLog Analyzer</button>
         </nav>
 
         <!-- JSON Formatter Tool -->
-        <div id="json-formatter" class="tool-panel active">
+        <div id="json-formatter" class="tool-panel">
             <div class="tool-header">
                 <h2>JSON Formatter</h2>
                 <p>Format, validate, and beautify JSON data</p>
             </div>
-            
+
             <div class="tool-content">
                 <div class="input-section">
                     <label for="json-input">Raw JSON:</label>
@@ -36,79 +49,79 @@
                         <button id="clear-json">Clear</button>
                     </div>
                 </div>
-                
+
                 <div class="output-section">
                     <label for="json-output">Formatted JSON:</label>
                     <textarea id="json-output" readonly></textarea>
                     <button id="copy-json">Copy to Clipboard</button>
                 </div>
             </div>
-            
+
             <div id="json-status" class="status-message"></div>
         </div>
 
         <!-- QueryLog Analyzer Tool -->
-        <div id="querylog-analyzer" class="tool-panel">
-            <div class="tool-header">
-                <h2>Laravel QueryLog Analyzer</h2>
-                <p>Analyze query execution times and performance</p>
-            </div>
-            
-            <div class="tool-content querylog-layout">
-                <div class="input-section full-width">
-                    <label for="querylog-input">QueryLog Data:</label>
-                    <textarea id="querylog-input" placeholder="Paste Laravel QueryLog array or JSON here..."></textarea>
-                    <div class="button-group">
-                        <button id="analyze-queries">Analyze Queries</button>
-                        <button id="clear-querylog">Clear</button>
-                    </div>
-                </div>
-                
-                <div class="stats-section full-width">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <h3>Total Queries</h3>
-                            <span id="total-queries">0</span>
-                        </div>
-                        <div class="stat-card">
-                            <h3>Total Time</h3>
-                            <span id="total-time">0ms</span>
-                        </div>
-                        <div class="stat-card">
-                            <h3>Average Time</h3>
-                            <span id="avg-time">0ms</span>
-                        </div>
-                        <div class="stat-card">
-                            <h3>Slowest Query</h3>
-                            <span id="slowest-time">0ms</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="queries-section full-width">
-                    <div class="queries-list">
-                        <div class="queries-header">
-                            <h3>Query Details</h3>
-                            <div class="query-controls">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="bind-values-toggle" checked>
-                                    <span class="slider"></span>
-                                    <span class="toggle-label">Show Bound Values</span>
-                                </label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="sort-by-time-toggle" checked>
-                                    <span class="slider"></span>
-                                    <span class="toggle-label">Sort by Time</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div id="queries-table"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="querylog-status" class="status-message"></div>
+        <div id="querylog-analyzer" class="tool-panel active"></div>
+        <div class="tool-header">
+            <h2>Laravel QueryLog Analyzer</h2>
+            <p>Analyze query execution times and performance</p>
         </div>
+
+        <div class="tool-content querylog-layout">
+            <div class="input-section full-width">
+                <label for="querylog-input">QueryLog Data:</label>
+                <textarea id="querylog-input" placeholder="Paste Laravel QueryLog array or JSON here..."></textarea>
+                <div class="button-group">
+                    <button id="analyze-queries">Analyze Queries</button>
+                    <button id="clear-querylog">Clear</button>
+                </div>
+            </div>
+
+            <div class="stats-section full-width">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Queries</h3>
+                        <span id="total-queries">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Time</h3>
+                        <span id="total-time">0ms</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Time</h3>
+                        <span id="avg-time">0ms</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Slowest Query</h3>
+                        <span id="slowest-time">0ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="queries-section full-width">
+                <div class="queries-list">
+                    <div class="queries-header">
+                        <h3>Query Details</h3>
+                        <div class="query-controls">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="bind-values-toggle" checked>
+                                <span class="slider"></span>
+                                <span class="toggle-label">Show Bound Values</span>
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sort-by-time-toggle" checked>
+                                <span class="slider"></span>
+                                <span class="toggle-label">Sort by Time</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="queries-table"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="querylog-status" class="status-message"></div>
+    </div>
     </div>
 
     <script src="js/json-formatter.js"></script>
@@ -118,11 +131,11 @@
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const toolName = btn.dataset.tool;
-                
+
                 // Update active nav button
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Show/hide tool panels
                 document.querySelectorAll('.tool-panel').forEach(panel => {
                     panel.classList.remove('active');
@@ -130,6 +143,35 @@
                 document.getElementById(toolName).classList.add('active');
             });
         });
+
+        // Dark mode functionality
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+
+        // Check for saved theme preference or default to dark mode
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'dark') {
+            body.setAttribute('data-theme', 'dark');
+            darkModeToggle.checked = true;
+        }
+
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Set dark mode as default on first visit
+        if (!localStorage.getItem('theme')) {
+            body.setAttribute('data-theme', 'dark');
+            darkModeToggle.checked = true;
+            localStorage.setItem('theme', 'dark');
+        }
     </script>
 </body>
+
 </html>
