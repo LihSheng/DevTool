@@ -12,6 +12,11 @@ class QueryLogAnalyzer {
         this.statusDiv = document.getElementById('querylog-status');
         this.bindValuesToggle = document.getElementById('bind-values-toggle');
         this.sortByTimeToggle = document.getElementById('sort-by-time-toggle');
+        this.showHistoryBtn = document.getElementById('show-history');
+        this.historyModal = document.getElementById('history-modal');
+        this.closeHistoryBtn = document.getElementById('close-history');
+        this.clearHistoryBtn = document.getElementById('clear-history');
+        this.historyList = document.getElementById('history-list');
 
         // Stats elements
         this.totalQueriesEl = document.getElementById('total-queries');
@@ -29,6 +34,16 @@ class QueryLogAnalyzer {
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.bindValuesToggle.addEventListener('change', () => this.toggleBindValues());
         this.sortByTimeToggle.addEventListener('change', () => this.toggleSortByTime());
+        this.showHistoryBtn.addEventListener('click', () => this.showHistory());
+        this.closeHistoryBtn.addEventListener('click', () => this.hideHistory());
+        this.clearHistoryBtn.addEventListener('click', () => this.clearAllHistory());
+        
+        // Close modal when clicking outside
+        this.historyModal.addEventListener('click', (e) => {
+            if (e.target === this.historyModal) {
+                this.hideHistory();
+            }
+        });
     }
 
     analyzeQueries() {
@@ -47,6 +62,10 @@ class QueryLogAnalyzer {
 
             const analysis = this.performAnalysis(queries);
             this.displayResults(analysis);
+            
+            // Save to history
+            this.saveToHistory(input, analysis);
+            
             this.showStatus(`Successfully analyzed ${queries.length} queries!`, 'success');
         } catch (error) {
             this.showStatus(`Error analyzing queries: ${error.message}`, 'error');
@@ -495,6 +514,118 @@ class QueryLogAnalyzer {
 
     hideStatus() {
         this.statusDiv.className = 'status-message';
+    }
+
+    saveToHistory(inputData, analysis) {
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleString(),
+            inputData: inputData,
+            analysis: analysis,
+            preview: this.generatePreview(analysis.originalQueries || analysis.sortedQueries)
+        };
+
+        // Get existing history
+        let history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
+        
+        // Add new item to beginning
+        history.unshift(historyItem);
+        
+        // Keep only last 20 items
+        history = history.slice(0, 20);
+        
+        // Save back to localStorage
+        localStorage.setItem('querylog-history', JSON.stringify(history));
+    }
+
+    generatePreview(queries) {
+        if (!queries || queries.length === 0) return 'No queries';
+        const firstQuery = queries[0].query || '';
+        return firstQuery.length > 100 ? firstQuery.substring(0, 100) + '...' : firstQuery;
+    }
+
+    showHistory() {
+        this.renderHistoryList();
+        this.historyModal.classList.add('show');
+    }
+
+    hideHistory() {
+        this.historyModal.classList.remove('show');
+    }
+
+    renderHistoryList() {
+        const history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
+        
+        if (history.length === 0) {
+            this.historyList.innerHTML = '<p class="no-history">No history available</p>';
+            return;
+        }
+
+        const historyHTML = history.map(item => `
+            <div class="history-item" data-id="${item.id}">
+                <div class="history-item-header">
+                    <span class="history-timestamp">${item.timestamp}</span>
+                    <div>
+                        <span class="history-stats">${item.analysis.totalQueries} queries • ${item.analysis.totalTime.toFixed(2)}ms</span>
+                        <button class="history-delete" data-id="${item.id}" onclick="event.stopPropagation()">Delete</button>
+                    </div>
+                </div>
+                <div class="history-preview">${item.preview}</div>
+            </div>
+        `).join('');
+
+        this.historyList.innerHTML = historyHTML;
+
+        // Add click listeners
+        this.historyList.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('history-delete')) {
+                    this.loadFromHistory(parseInt(item.dataset.id));
+                }
+            });
+        });
+
+        // Add delete listeners
+        this.historyList.querySelectorAll('.history-delete').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteHistoryItem(parseInt(btn.dataset.id));
+            });
+        });
+    }
+
+    loadFromHistory(id) {
+        const history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
+        const item = history.find(h => h.id === id);
+        
+        if (item) {
+            // Restore input data
+            this.querylogInput.value = item.inputData;
+            
+            // Restore analysis
+            this.currentAnalysis = item.analysis;
+            this.displayResults(item.analysis);
+            
+            // Close modal
+            this.hideHistory();
+            
+            this.showStatus('History item loaded successfully!', 'success');
+        }
+    }
+
+    deleteHistoryItem(id) {
+        let history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
+        history = history.filter(h => h.id !== id);
+        localStorage.setItem('querylog-history', JSON.stringify(history));
+        this.renderHistoryList();
+    }
+
+    clearAllHistory() {
+        if (confirm('Are you sure you want to clear all history?')) {
+            localStorage.removeItem('querylog-history');
+            this.renderHistoryList();
+            this.showStatus('History cleared successfully!', 'success');
+        }
     }
 }
 
