@@ -28,6 +28,10 @@ class VMConnector {
         this.browseDirectoryBtn = document.getElementById('browse-directory');
         this.fileBrowser = document.getElementById('file-browser');
 
+        // Navigation history elements
+        this.navBackBtn = document.getElementById('nav-back');
+        this.navForwardBtn = document.getElementById('nav-forward');
+
         // Preview elements
         this.previewTitle = document.getElementById('preview-title');
         this.previewActions = document.getElementById('preview-actions');
@@ -39,6 +43,13 @@ class VMConnector {
         this.currentPath = '/';
         this.selectedFilePath = '';
         this.currentFileContent = '';
+
+        // Navigation history
+        this.pathHistory = ['/'];
+        this.historyIndex = 0;
+        
+        // Initialize navigation buttons
+        this.updateNavigationButtons();
     }
 
     bindEvents() {
@@ -46,6 +57,8 @@ class VMConnector {
         this.toggleSettingsBtn.addEventListener('click', () => this.toggleSettings());
         this.browserModeToggle.addEventListener('change', () => this.toggleBrowserMode());
         this.browseDirectoryBtn.addEventListener('click', () => this.browseDirectory());
+        this.navBackBtn.addEventListener('click', () => this.navigateBack());
+        this.navForwardBtn.addEventListener('click', () => this.navigateForward());
 
         // Manual mode connect button
         if (this.connectBtn) {
@@ -353,6 +366,7 @@ class VMConnector {
 
             if (response.ok) {
                 this.displayDirectoryContents(result.path, result.contents);
+                this.addToHistory(result.path);
                 this.currentPath = result.path;
                 this.showStatus(`Loaded directory: ${result.path}`, 'success');
             } else {
@@ -430,7 +444,7 @@ class VMConnector {
         } else {
             // Navigate to directory
             this.currentDirectoryInput.value = path;
-            this.browseDirectory();
+            this.browseDirectory(); // This will automatically add to history
         }
     }
 
@@ -584,6 +598,123 @@ class VMConnector {
         this.hideStatus();
         this.showStatus('Form cleared', 'info');
         setTimeout(() => this.hideStatus(), 1500);
+    }
+
+    // Navigation History Methods
+    addToHistory(path) {
+        // Don't add if it's the same as current path
+        if (this.pathHistory[this.historyIndex] === path) {
+            return;
+        }
+
+        // Remove any forward history when navigating to a new path
+        this.pathHistory = this.pathHistory.slice(0, this.historyIndex + 1);
+        
+        // Add new path to history
+        this.pathHistory.push(path);
+        this.historyIndex = this.pathHistory.length - 1;
+        
+        // Update button states
+        this.updateNavigationButtons();
+    }
+
+    navigateBack() {
+        if (this.historyIndex > 0) {
+            this.historyIndex--;
+            const path = this.pathHistory[this.historyIndex];
+            this.navigateToPath(path);
+        }
+    }
+
+    navigateForward() {
+        if (this.historyIndex < this.pathHistory.length - 1) {
+            this.historyIndex++;
+            const path = this.pathHistory[this.historyIndex];
+            this.navigateToPath(path);
+        }
+    }
+
+    async navigateToPath(path) {
+        // Update the input field
+        this.currentDirectoryInput.value = path;
+        
+        // Browse to the path without adding to history (to avoid infinite loop)
+        await this.browseDirectoryWithoutHistory(path);
+        
+        // Update button states
+        this.updateNavigationButtons();
+    }
+
+    async browseDirectoryWithoutHistory(directoryPath) {
+        this.showStatus('Loading directory...', 'info');
+        this.browseDirectoryBtn.disabled = true;
+
+        try {
+            const requestData = {
+                directoryPath: directoryPath,
+                useDefaults: !this.settingsVisible && this.hasDefaults
+            };
+
+            // If settings are visible, include custom VM config
+            if (this.settingsVisible || !this.hasDefaults) {
+                const vmConfig = {
+                    host: this.vmHostInput.value.trim(),
+                    username: this.vmUsernameInput.value.trim(),
+                    password: this.vmPasswordInput.value,
+                    port: parseInt(this.vmPortInput.value) || 22
+                };
+
+                if (!vmConfig.host || !vmConfig.username || !vmConfig.password) {
+                    this.showStatus('Please configure VM connection settings first', 'error');
+                    return;
+                }
+
+                requestData.vmConfig = vmConfig;
+            }
+
+            const response = await fetch('/api/vm-browse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                this.displayDirectoryContents(result.path, result.contents);
+                this.currentPath = result.path;
+                this.showStatus(`Loaded directory: ${result.path}`, 'success');
+            } else {
+                this.showStatus(`Error: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            this.showStatus(`Failed to browse directory: ${error.message}`, 'error');
+        } finally {
+            this.browseDirectoryBtn.disabled = false;
+        }
+    }
+
+    updateNavigationButtons() {
+        // Update back button
+        this.navBackBtn.disabled = this.historyIndex <= 0;
+        
+        // Update forward button
+        this.navForwardBtn.disabled = this.historyIndex >= this.pathHistory.length - 1;
+        
+        // Update tooltips with path info
+        if (this.historyIndex > 0) {
+            this.navBackBtn.title = `Go back to: ${this.pathHistory[this.historyIndex - 1]}`;
+        } else {
+            this.navBackBtn.title = 'Go back';
+        }
+        
+        if (this.historyIndex < this.pathHistory.length - 1) {
+            this.navForwardBtn.title = `Go forward to: ${this.pathHistory[this.historyIndex + 1]}`;
+        } else {
+            this.navForwardBtn.title = 'Go forward';
+        }
     }
 }
 

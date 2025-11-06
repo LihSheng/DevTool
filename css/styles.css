@@ -1520,6 +1520,40 @@ input:checked+.slider:before {
     flex: 1;
 }
 
+/* Navigation History Buttons */
+.nav-history-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.nav-history-btn {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-history-btn:hover:not(:disabled) {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.nav-history-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+}
+
 .path-navigation input {
     flex: 1;
     padding: 0.4rem;
