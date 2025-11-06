@@ -85,28 +85,77 @@ body {
 }
 
 .sidebar-header {
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 60px; /* Fixed height for consistency */
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    flex: 1;
+    height: 100%;
 }
 
 .logo h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin: 0;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
 }
 
 .logo span {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     opacity: 0.9;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Dark mode toggle in sidebar header */
+.sidebar-header .toggle-switch {
+    flex-shrink: 0;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    height: auto;
+}
+
+.sidebar-header .toggle-switch .slider {
+    width: 40px;
+    height: 20px;
+    margin: 0;
+}
+
+.sidebar-header .toggle-switch .slider:before {
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+}
+
+.sidebar-header .toggle-switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.sidebar-header .toggle-switch .toggle-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
 }
 
 .sidebar-nav {
@@ -588,10 +637,10 @@ button:active {
 .queries-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 0.5rem;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 1rem;
     padding: 0;
     flex-shrink: 0;
 }
@@ -607,13 +656,14 @@ button:active {
     color: var(--text-primary);
 }
 
-/* Search and Controls Container */
-.query-search-controls {
+/* Controls Row - Search and Toggles on same level */
+.query-controls-row {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 1.5rem;
     flex: 1;
     min-width: 0;
+    flex-wrap: wrap;
 }
 
 /* Search Container */
@@ -621,19 +671,21 @@ button:active {
     position: relative;
     display: flex;
     align-items: center;
-    max-width: 300px;
-    width: 100%;
+    max-width: 250px;
+    min-width: 200px;
+    flex: 0 0 auto;
 }
 
 .query-search-input {
     flex: 1;
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    padding: 0.4rem 2rem 0.4rem 0.75rem;
     border: 2px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.85rem;
     background: var(--bg-primary);
     color: var(--text-primary);
     transition: border-color 0.3s ease;
+    height: 32px; /* Match toggle switch height */
 }
 
 .query-search-input:focus {
@@ -672,6 +724,24 @@ button:active {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 768px) {
+    .query-controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .search-container {
+        max-width: none;
+        min-width: auto;
+    }
+    
+    .query-controls {
+        justify-content: center;
+    }
 }
 
 /* Search Results Info */
@@ -889,11 +959,11 @@ input:checked+.slider:before {
 /* Global Notification System */
 .notification-container {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
     z-index: 10000;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse; /* Stack from bottom up */
     gap: 10px;
     max-width: 400px;
     pointer-events: none;
@@ -1035,7 +1105,7 @@ input:checked+.slider:before {
 /* Responsive Notifications */
 @media (max-width: 768px) {
     .notification-container {
-        top: 10px;
+        bottom: 10px;
         right: 10px;
         left: 10px;
         max-width: none;
@@ -1295,7 +1365,8 @@ input:checked+.slider:before {
     border-radius: 6px;
     border: 1px solid var(--border-color);
     margin-bottom: 0.5rem;
-    flex-shrink: 0; /* Don't shrink */
+    flex-shrink: 0;
+    min-height: 52px; /* Fixed container height */
 }
 
 .vm-status-compact {
@@ -1307,27 +1378,65 @@ input:checked+.slider:before {
 
 .vm-controls-compact {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
+}
+
+/* VM Control Buttons - Base Styles */
+.vm-controls-compact button {
+    /* Reset all inherited styles */
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+    
+    /* Common button styles */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    vertical-align: top;
 }
 
 .settings-toggle-btn {
     background: var(--accent-color);
     color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s;
+    border-color: var(--accent-color);
+    min-width: 80px;
 }
 
 .settings-toggle-btn:hover {
     background: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
 .settings-toggle-btn.active {
     background: var(--warning-color);
+    border-color: var(--warning-color);
+}
+
+.secondary-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    min-width: 40px;
+}
+
+.secondary-btn:hover {
+    background: var(--border-color);
+    border-color: var(--accent-color);
 }
 
 .status-indicator {
