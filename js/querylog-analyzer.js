@@ -14,6 +14,8 @@ class QueryLogAnalyzer {
         this.sortByTimeToggle = document.getElementById('sort-by-time-toggle');
         this.showHistoryBtn = document.getElementById('show-history');
         this.toggleInputBtn = document.getElementById('toggle-querylog-input');
+        this.querySearchInput = document.getElementById('query-search');
+        this.clearSearchBtn = document.getElementById('clear-search');
         this.historyModal = document.getElementById('history-modal');
         this.closeHistoryBtn = document.getElementById('close-history');
         this.clearHistoryBtn = document.getElementById('clear-history');
@@ -37,6 +39,9 @@ class QueryLogAnalyzer {
         this.sortByTimeToggle.addEventListener('change', () => this.toggleSortByTime());
         this.showHistoryBtn.addEventListener('click', () => this.showHistory());
         this.toggleInputBtn.addEventListener('click', () => this.toggleInputSection());
+        this.querySearchInput.addEventListener('input', () => this.handleSearch());
+        this.querySearchInput.addEventListener('keyup', () => this.toggleClearButton());
+        this.clearSearchBtn.addEventListener('click', () => this.clearSearch());
         this.closeHistoryBtn.addEventListener('click', () => this.hideHistory());
         this.clearHistoryBtn.addEventListener('click', () => this.clearAllHistory());
         
@@ -285,9 +290,23 @@ class QueryLogAnalyzer {
         this.avgTimeEl.textContent = `${analysis.avgTime.toFixed(2)}ms`;
         this.slowestTimeEl.textContent = `${analysis.slowestTime.toFixed(2)}ms`;
 
+        // Clear any existing search
+        this.querySearchInput.value = '';
+        this.toggleClearButton();
+
         // Generate queries table with enhanced information
         const queriesToDisplay = this.sortByTimeToggle.checked ? analysis.sortedQueries : analysis.originalQueries;
-        this.generateQueriesTable(queriesToDisplay, analysis);
+        this.renderQueriesTable(queriesToDisplay);
+    }
+
+    renderQueriesTable(queries) {
+        // Remove existing search info when rendering fresh results
+        const existingInfo = this.queriesTableEl.parentNode.querySelector('.search-results-info');
+        if (existingInfo) {
+            existingInfo.remove();
+        }
+
+        this.generateQueriesTable(queries, this.currentAnalysis);
     }
 
     generateQueriesTable(queries, analysis) {
@@ -296,11 +315,16 @@ class QueryLogAnalyzer {
             return;
         }
 
+        // Calculate stats for current query set (filtered or full)
+        const currentSlowQueries = queries.filter(q => q.time > 100);
+        const currentFastQueries = queries.filter(q => q.time <= 10);
+        const currentTotalTime = queries.reduce((sum, q) => sum + q.time, 0);
+
         // Add summary information
         const summaryHTML = `
             <div class="query-summary-compact">
-                <span class="summary-compact-item">🐌 ${analysis.slowQueries.length}</span>
-                <span class="summary-compact-item">⚡ ${analysis.fastQueries.length}</span>
+                <span class="summary-compact-item">🐌 ${currentSlowQueries.length}</span>
+                <span class="summary-compact-item">⚡ ${currentFastQueries.length}</span>
                 <span class="summary-compact-item">🎯 #${queries[0].originalIndex || queries[0].index + 1} (${queries[0].time.toFixed(2)}ms)</span>
             </div>
         `;
@@ -316,7 +340,7 @@ class QueryLogAnalyzer {
                     <div class="header-cell">Action</div>
                 </div>
                 ${queries.map((query, index) => {
-            const percentage = ((query.time / analysis.totalTime) * 100).toFixed(1);
+            const percentage = ((query.time / currentTotalTime) * 100).toFixed(1);
             const isSlowiest = index === 0;
             return `
                         <div class="query-row ${isSlowiest && this.sortByTimeToggle.checked ? 'slowest-query' : ''}">
@@ -382,18 +406,26 @@ class QueryLogAnalyzer {
     }
 
     toggleBindValues() {
-        // Re-render the table with current analysis if available
+        // Re-render with current search if active, otherwise show all
         if (this.currentAnalysis) {
-            const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
-            this.generateQueriesTable(queriesToDisplay, this.currentAnalysis);
+            if (this.querySearchInput.value.trim()) {
+                this.handleSearch(); // Re-apply search with new bind values setting
+            } else {
+                const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
+                this.renderQueriesTable(queriesToDisplay);
+            }
         }
     }
 
     toggleSortByTime() {
-        // Re-render the table with current analysis if available
+        // Re-render with current search if active, otherwise show all
         if (this.currentAnalysis) {
-            const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
-            this.generateQueriesTable(queriesToDisplay, this.currentAnalysis);
+            if (this.querySearchInput.value.trim()) {
+                this.handleSearch(); // Re-apply search with new sort setting
+            } else {
+                const queriesToDisplay = this.sortByTimeToggle.checked ? this.currentAnalysis.sortedQueries : this.currentAnalysis.originalQueries;
+                this.renderQueriesTable(queriesToDisplay);
+            }
         }
     }
 
@@ -659,6 +691,66 @@ class QueryLogAnalyzer {
         
         // Force a reflow to ensure the changes take effect
         inputSection.offsetHeight;
+    }
+
+    handleSearch() {
+        const searchTerm = this.querySearchInput.value.toLowerCase().trim();
+        
+        if (!this.currentAnalysis) {
+            return;
+        }
+
+        // Filter queries based on search term
+        const filteredQueries = this.currentAnalysis.originalQueries.filter(query => {
+            const sql = query.query.toLowerCase();
+            const bindings = query.bindings ? JSON.stringify(query.bindings).toLowerCase() : '';
+            return sql.includes(searchTerm) || bindings.includes(searchTerm);
+        });
+
+        // Update the display with filtered results
+        this.displayFilteredResults(filteredQueries, searchTerm);
+        this.toggleClearButton();
+    }
+
+    displayFilteredResults(filteredQueries, searchTerm) {
+        // Sort filtered queries if sort toggle is enabled
+        let queriesToDisplay = [...filteredQueries];
+        if (this.sortByTimeToggle.checked) {
+            queriesToDisplay.sort((a, b) => b.time - a.time);
+        }
+
+        // Add search results info
+        this.addSearchResultsInfo(filteredQueries.length, this.currentAnalysis.originalQueries.length, searchTerm);
+
+        // Render the filtered queries
+        this.generateQueriesTable(queriesToDisplay, this.currentAnalysis);
+    }
+
+    addSearchResultsInfo(filteredCount, totalCount, searchTerm) {
+        // Remove existing search info
+        const existingInfo = this.queriesTableEl.parentNode.querySelector('.search-results-info');
+        if (existingInfo) {
+            existingInfo.remove();
+        }
+
+        if (searchTerm) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'search-results-info';
+            infoDiv.textContent = `Showing ${filteredCount} of ${totalCount} queries matching "${searchTerm}"`;
+            this.queriesTableEl.parentNode.insertBefore(infoDiv, this.queriesTableEl);
+        }
+    }
+
+    clearSearch() {
+        this.querySearchInput.value = '';
+        this.handleSearch(); // This will show all queries again
+        this.toggleClearButton();
+        this.querySearchInput.focus();
+    }
+
+    toggleClearButton() {
+        const hasValue = this.querySearchInput.value.length > 0;
+        this.clearSearchBtn.classList.toggle('visible', hasValue);
     }
 }
 
