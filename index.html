@@ -30,6 +30,7 @@
         <nav class="tool-nav">
             <button class="nav-btn" data-tool="json-formatter">JSON Formatter</button>
             <button class="nav-btn active" data-tool="querylog-analyzer">QueryLog Analyzer</button>
+            <button class="nav-btn" data-tool="vm-connector">VM File Connector</button>
         </nav>
 
         <!-- JSON Formatter Tool -->
@@ -125,6 +126,91 @@
             <div id="querylog-status" class="status-message"></div>
         </div>
 
+        <!-- VM File Connector Tool -->
+        <div id="vm-connector" class="tool-panel">
+            <div class="tool-header">
+                <h2>VM File Connector</h2>
+                <p>Connect to remote VMs and retrieve files via SSH</p>
+            </div>
+
+            <!-- Compact VM Settings Bar -->
+            <div class="vm-settings-bar">
+                <div class="vm-status-compact">
+                    <span class="status-indicator">🔗</span>
+                    <span id="connection-info">Using default configuration</span>
+                </div>
+                <div class="vm-controls-compact">
+                    <button id="toggle-vm-settings" class="settings-toggle-btn">⚙️ Settings</button>
+                    <button id="reload-defaults" class="secondary-btn">🔄</button>
+                </div>
+            </div>
+
+            <!-- Collapsible VM Settings -->
+            <div id="vm-settings-form" class="vm-settings-form-compact hidden">
+                <div class="settings-grid-compact">
+                    <input type="text" id="vm-host" placeholder="Host/IP">
+                    <input type="number" id="vm-port" value="22" placeholder="Port">
+                    <input type="text" id="vm-username" placeholder="Username">
+                    <input type="password" id="vm-password" placeholder="Password">
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="vm-main-content">
+                <!-- Left Panel: File Browser -->
+                <div class="file-explorer-panel">
+                    <div class="explorer-header">
+                        <div class="path-navigation">
+                            <input type="text" id="current-directory" value="/" placeholder="/home/user">
+                            <button id="browse-directory" class="browse-btn">📂</button>
+                        </div>
+                        <div class="explorer-controls">
+                            <label class="toggle-switch-mini">
+                                <input type="checkbox" id="browser-mode-toggle" checked>
+                                <span class="slider-mini"></span>
+                                <span class="toggle-label-mini">Browser</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- File Browser -->
+                    <div id="file-browser-section" class="file-browser-section">
+                        <div id="file-browser" class="file-browser-enhanced">
+                            <div class="browser-placeholder">
+                                Click 📂 to explore directories
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Path Mode -->
+                    <div id="manual-path-section" class="manual-path-section hidden">
+                        <input type="text" id="vm-file-path" placeholder="Enter file path...">
+                        <button id="connect-vm" class="primary-btn">Get File</button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: File Preview -->
+                <div class="file-preview-panel">
+                    <div class="preview-header">
+                        <span id="preview-title">Select a file to preview</span>
+                        <div class="preview-actions hidden" id="preview-actions">
+                            <button id="copy-file-content" class="action-btn">📋</button>
+                            <button id="download-file" class="action-btn">💾</button>
+                        </div>
+                    </div>
+                    <div id="vm-file-content" class="file-preview-content">
+                        <div class="preview-placeholder">
+                            <div class="placeholder-icon">📄</div>
+                            <p>No file selected</p>
+                            <small>Browse and click on a file to view its contents</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vm-status" class="status-message"></div>
+        </div>
+
     <!-- History Modal -->
     <div id="history-modal" class="modal">
         <div class="modal-content">
@@ -145,6 +231,7 @@
 
     <script src="js/json-formatter.js"></script>
     <script src="js/querylog-analyzer.js"></script>
+    <script src="js/vm-connector.js"></script>
     <script>
         // Navigation functionality
         document.querySelectorAll('.nav-btn').forEach(btn => {

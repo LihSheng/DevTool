@@ -7,7 +7,17 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["dev-tools", "json", "laravel", "querylog", "analyzer"],
+  "keywords": [
+    "dev-tools",
+    "json",
+    "laravel",
+    "querylog",
+    "analyzer"
+  ],
   "author": "LihSheng",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ssh2": "^1.15.0",
+    "dotenv": "^16.3.1"
+  }
 }

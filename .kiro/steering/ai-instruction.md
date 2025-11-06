@@ -1,0 +1,1 @@
+1. When you want to run the project in local, check the localhost server port 3050 is used, kill the process if needed. Do not update the default port in readme. If you just work on normal enhancement, no need to do anything with the local port
