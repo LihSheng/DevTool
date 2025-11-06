@@ -177,14 +177,22 @@
                                     <button id="nav-forward" class="nav-history-btn" title="Go forward" disabled>▶</button>
                                 </div>
                                 <input type="text" id="current-directory" value="/" placeholder="/home/user">
-                                <button id="browse-directory" class="browse-btn">📂</button>
+                                <div class="path-actions">
+                                    <button id="star-path" class="star-btn" title="Bookmark this path">☆</button>
+                                    <button id="bookmarks-dropdown" class="bookmarks-btn" title="View bookmarks">📑</button>
+                                    <button id="browse-directory" class="browse-btn">📂</button>
+                                </div>
                             </div>
-                            <div class="explorer-controls">
-                                <label class="toggle-switch-mini">
-                                    <input type="checkbox" id="browser-mode-toggle" checked>
-                                    <span class="slider-mini"></span>
-                                    <span class="toggle-label-mini">Browser</span>
-                                </label>
+                        </div>
+
+                        <!-- Bookmarks Panel -->
+                        <div id="bookmarks-panel" class="bookmarks-panel hidden">
+                            <div class="bookmarks-header">
+                                <h4>📑 Bookmarked Paths</h4>
+                                <button id="close-bookmarks" class="close-bookmarks-btn">✕</button>
+                            </div>
+                            <div id="bookmarks-list" class="bookmarks-list">
+                                <div class="no-bookmarks">No bookmarked paths yet</div>
                             </div>
                         </div>
 
@@ -197,11 +205,7 @@
                             </div>
                         </div>
 
-                        <!-- Manual Path Mode -->
-                        <div id="manual-path-section" class="manual-path-section hidden">
-                            <input type="text" id="vm-file-path" placeholder="Enter file path...">
-                            <button id="connect-vm" class="primary-btn">Get File</button>
-                        </div>
+
                     </div>
 
                     <!-- Right Panel: File Preview -->

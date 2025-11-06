@@ -1505,9 +1505,6 @@ input:checked+.slider:before {
 }
 
 .explorer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 0.75rem;
     background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-color);
@@ -1520,26 +1517,40 @@ input:checked+.slider:before {
     flex: 1;
 }
 
+/* Path Actions Container */
+.path-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
 /* Navigation History Buttons */
 .nav-history-buttons {
     display: flex;
     gap: 0.25rem;
 }
 
-.nav-history-btn {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    padding: 0.3rem 0.5rem;
+/* Standardized File Explorer Buttons */
+.nav-history-btn, .star-btn, .bookmarks-btn, .browse-btn {
+    height: 32px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     transition: all 0.2s;
-    min-width: 28px;
-    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+/* Navigation History Buttons */
+.nav-history-btn {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 0;
+    min-width: 32px;
+    font-size: 0.8rem;
 }
 
 .nav-history-btn:hover:not(:disabled) {
@@ -1554,87 +1565,60 @@ input:checked+.slider:before {
     background: var(--bg-secondary);
 }
 
+/* Path Input */
 .path-navigation input {
     flex: 1;
-    padding: 0.4rem;
+    height: 32px;
+    padding: 0 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--bg-primary);
     color: var(--text-primary);
     font-family: monospace;
     font-size: 0.85rem;
+    box-sizing: border-box;
 }
 
+/* Browse Button */
 .browse-btn {
     background: var(--accent-color);
     color: white;
-    border: none;
-    padding: 0.4rem 0.6rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background-color 0.2s;
+    border-color: var(--accent-color);
+    padding: 0 0.75rem;
+    font-weight: 500;
 }
 
 .browse-btn:hover:not(:disabled) {
     background: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
-.explorer-controls {
-    display: flex;
-    align-items: center;
-}
-
-/* Mini Toggle Switch */
-.toggle-switch-mini {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    user-select: none;
-}
-
-.toggle-switch-mini input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider-mini {
-    position: relative;
-    width: 36px;
-    height: 18px;
-    background-color: #ccc;
-    border-radius: 18px;
-    transition: .3s;
-}
-
-.slider-mini:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    border-radius: 50%;
-    transition: .3s;
-}
-
-input:checked+.slider-mini {
-    background-color: var(--accent-color);
-}
-
-input:checked+.slider-mini:before {
-    transform: translateX(18px);
-}
-
-.toggle-label-mini {
-    font-size: 0.8rem;
-    font-weight: 500;
+/* Star and Bookmarks Buttons */
+.star-btn, .bookmarks-btn {
+    background: var(--bg-primary);
     color: var(--text-primary);
+    padding: 0;
+    min-width: 32px;
 }
+
+.star-btn:hover, .bookmarks-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.star-btn.starred {
+    background: var(--warning-color);
+    color: white;
+    border-color: var(--warning-color);
+}
+
+.star-btn.starred:hover {
+    background: #e67e22;
+    border-color: #e67e22;
+}
+
+
 
 /* Enhanced File Browser */
 .file-browser-enhanced {
@@ -1646,6 +1630,49 @@ input:checked+.slider-mini:before {
     max-height: calc(100vh - 15rem); /* Constrain height */
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
+    position: relative;
+}
+
+/* File Browser Loading Indicator */
+.file-browser-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dark mode loading overlay */
+[data-theme="dark"] .file-browser-loading {
+    background: rgba(52, 73, 94, 0.9);
 }
 
 .file-browser::-webkit-scrollbar {
@@ -1708,6 +1735,150 @@ input:checked+.slider-mini:before {
     flex: 1;
     overflow: auto;
     background: var(--bg-primary);
+    position: relative;
+}
+
+/* File Preview Loading Indicator */
+.file-preview-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.file-preview-loading .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.75rem;
+}
+
+.file-preview-loading .loading-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Dark mode preview loading overlay */
+[data-theme="dark"] .file-preview-loading {
+    background: rgba(52, 73, 94, 0.9);
+}
+
+/* Bookmarks Panel */
+.bookmarks-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.bookmarks-panel.hidden {
+    display: none;
+}
+
+.bookmarks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.bookmarks-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.close-bookmarks-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.close-bookmarks-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.bookmarks-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.no-bookmarks {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 1rem;
+    font-size: 0.85rem;
+}
+
+.bookmark-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 0.25rem;
+    border: 1px solid transparent;
+}
+
+.bookmark-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-color);
+}
+
+.bookmark-path {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    flex: 1;
+    margin-right: 0.5rem;
+    word-break: break-all;
+}
+
+.bookmark-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.bookmark-delete {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.bookmark-delete:hover {
+    background: var(--error-color);
+    color: white;
 }
 
 .preview-placeholder {

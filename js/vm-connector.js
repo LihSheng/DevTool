@@ -11,8 +11,6 @@ class VMConnector {
         this.vmUsernameInput = document.getElementById('vm-username');
         this.vmPasswordInput = document.getElementById('vm-password');
         this.vmPortInput = document.getElementById('vm-port');
-        this.filePathInput = document.getElementById('vm-file-path');
-        this.connectBtn = document.getElementById('connect-vm');
         this.reloadDefaultsBtn = document.getElementById('reload-defaults');
         this.toggleSettingsBtn = document.getElementById('toggle-vm-settings');
         this.settingsForm = document.getElementById('vm-settings-form');
@@ -21,9 +19,7 @@ class VMConnector {
         this.fileContentDiv = document.getElementById('vm-file-content');
 
         // File browser elements
-        this.browserModeToggle = document.getElementById('browser-mode-toggle');
         this.fileBrowserSection = document.getElementById('file-browser-section');
-        this.manualPathSection = document.getElementById('manual-path-section');
         this.currentDirectoryInput = document.getElementById('current-directory');
         this.browseDirectoryBtn = document.getElementById('browse-directory');
         this.fileBrowser = document.getElementById('file-browser');
@@ -32,6 +28,13 @@ class VMConnector {
         this.navBackBtn = document.getElementById('nav-back');
         this.navForwardBtn = document.getElementById('nav-forward');
 
+        // Bookmark elements
+        this.starBtn = document.getElementById('star-path');
+        this.bookmarksBtn = document.getElementById('bookmarks-dropdown');
+        this.bookmarksPanel = document.getElementById('bookmarks-panel');
+        this.closeBookmarksBtn = document.getElementById('close-bookmarks');
+        this.bookmarksList = document.getElementById('bookmarks-list');
+
         // Preview elements
         this.previewTitle = document.getElementById('preview-title');
         this.previewActions = document.getElementById('preview-actions');
@@ -39,7 +42,6 @@ class VMConnector {
         // Track state
         this.settingsVisible = false;
         this.hasDefaults = false;
-        this.browserMode = true;
         this.currentPath = '/';
         this.selectedFilePath = '';
         this.currentFileContent = '';
@@ -47,23 +49,26 @@ class VMConnector {
         // Navigation history
         this.pathHistory = ['/'];
         this.historyIndex = 0;
-        
+
         // Initialize navigation buttons
         this.updateNavigationButtons();
+
+        // Initialize bookmarks
+        this.loadBookmarks();
+        this.updateStarButton();
     }
 
     bindEvents() {
         this.reloadDefaultsBtn.addEventListener('click', () => this.loadDefaults());
         this.toggleSettingsBtn.addEventListener('click', () => this.toggleSettings());
-        this.browserModeToggle.addEventListener('change', () => this.toggleBrowserMode());
         this.browseDirectoryBtn.addEventListener('click', () => this.browseDirectory());
         this.navBackBtn.addEventListener('click', () => this.navigateBack());
         this.navForwardBtn.addEventListener('click', () => this.navigateForward());
+        this.starBtn.addEventListener('click', () => this.toggleBookmark());
+        this.bookmarksBtn.addEventListener('click', () => this.toggleBookmarksPanel());
+        this.closeBookmarksBtn.addEventListener('click', () => this.hideBookmarksPanel());
 
-        // Manual mode connect button
-        if (this.connectBtn) {
-            this.connectBtn.addEventListener('click', () => this.getFileFromVM());
-        }
+
 
         // Allow Enter key to trigger actions
         [this.vmHostInput, this.vmUsernameInput, this.vmPasswordInput].forEach(input => {
@@ -92,20 +97,10 @@ class VMConnector {
     }
 
     async getFileFromVM() {
-        let filePath;
-
-        if (this.browserMode) {
-            filePath = this.selectedFilePath;
-            if (!filePath) {
-                this.showStatus('Please select a file from the browser', 'error');
-                return;
-            }
-        } else {
-            filePath = this.filePathInput.value.trim();
-            if (!filePath) {
-                this.showStatus('Please enter a file path', 'error');
-                return;
-            }
+        const filePath = this.selectedFilePath;
+        if (!filePath) {
+            this.showStatus('Please select a file from the browser', 'error');
+            return;
         }
 
         // Prepare request payload
@@ -267,7 +262,6 @@ class VMConnector {
                 this.vmHostInput.value = defaults.host;
                 this.vmPortInput.value = defaults.port;
                 this.vmUsernameInput.value = defaults.username;
-                this.filePathInput.value = defaults.defaultFilePath;
 
                 // Update connection status
                 this.hasDefaults = !!(defaults.host && defaults.username);
@@ -311,24 +305,12 @@ class VMConnector {
         }
     }
 
-    toggleBrowserMode() {
-        this.browserMode = this.browserModeToggle.checked;
 
-        if (this.browserMode) {
-            this.fileBrowserSection.classList.remove('hidden');
-            this.manualPathSection.classList.add('hidden');
-            this.connectBtn.textContent = '🔗 Get Selected File';
-        } else {
-            this.fileBrowserSection.classList.add('hidden');
-            this.manualPathSection.classList.remove('hidden');
-            this.connectBtn.textContent = '🔗 Connect & Get File';
-        }
-    }
 
     async browseDirectory() {
         const directoryPath = this.currentDirectoryInput.value.trim() || '/';
 
-        this.showStatus('Loading directory...', 'info');
+        this.showFileBrowserLoading('Loading directory...');
         this.browseDirectoryBtn.disabled = true;
 
         try {
@@ -368,11 +350,14 @@ class VMConnector {
                 this.displayDirectoryContents(result.path, result.contents);
                 this.addToHistory(result.path);
                 this.currentPath = result.path;
-                this.showStatus(`Loaded directory: ${result.path}`, 'success');
+                this.updateStarButton();
+                this.hideFileBrowserLoading();
             } else {
+                this.hideFileBrowserLoading();
                 this.showStatus(`Error: ${result.error}`, 'error');
             }
         } catch (error) {
+            this.hideFileBrowserLoading();
             this.showStatus(`Failed to browse directory: ${error.message}`, 'error');
         } finally {
             this.browseDirectoryBtn.disabled = false;
@@ -439,8 +424,6 @@ class VMConnector {
 
             // Auto-preview the file
             this.previewFile(path);
-
-            this.showStatus(`Selected file: ${path}`, 'info');
         } else {
             // Navigate to directory
             this.currentDirectoryInput.value = path;
@@ -449,8 +432,10 @@ class VMConnector {
     }
 
     async previewFile(filePath) {
-        this.previewTitle.textContent = `Loading ${filePath.split('/').pop()}...`;
+        const fileName = filePath.split('/').pop();
+        this.previewTitle.textContent = fileName;
         this.previewActions.classList.add('hidden');
+        this.showFilePreviewLoading(`Loading ${fileName}...`);
 
         try {
             const requestData = {
@@ -468,6 +453,7 @@ class VMConnector {
                 };
 
                 if (!vmConfig.host || !vmConfig.username || !vmConfig.password) {
+                    this.hideFilePreviewLoading();
                     this.showPreviewError('VM connection not configured');
                     return;
                 }
@@ -488,12 +474,14 @@ class VMConnector {
             if (response.ok) {
                 this.displayFilePreview(result.content, filePath);
                 this.currentFileContent = result.content;
-                this.showStatus(`Loaded file: ${filePath}`, 'success');
+                this.hideFilePreviewLoading();
             } else {
+                this.hideFilePreviewLoading();
                 this.showPreviewError(`Error: ${result.error}`);
                 this.showStatus(`Error loading file: ${result.error}`, 'error');
             }
         } catch (error) {
+            this.hideFilePreviewLoading();
             this.showPreviewError(`Failed to load file: ${error.message}`);
             this.showStatus(`Failed to load file: ${error.message}`, 'error');
         }
@@ -609,11 +597,11 @@ class VMConnector {
 
         // Remove any forward history when navigating to a new path
         this.pathHistory = this.pathHistory.slice(0, this.historyIndex + 1);
-        
+
         // Add new path to history
         this.pathHistory.push(path);
         this.historyIndex = this.pathHistory.length - 1;
-        
+
         // Update button states
         this.updateNavigationButtons();
     }
@@ -637,16 +625,16 @@ class VMConnector {
     async navigateToPath(path) {
         // Update the input field
         this.currentDirectoryInput.value = path;
-        
+
         // Browse to the path without adding to history (to avoid infinite loop)
         await this.browseDirectoryWithoutHistory(path);
-        
+
         // Update button states
         this.updateNavigationButtons();
     }
 
     async browseDirectoryWithoutHistory(directoryPath) {
-        this.showStatus('Loading directory...', 'info');
+        this.showFileBrowserLoading('Loading directory...');
         this.browseDirectoryBtn.disabled = true;
 
         try {
@@ -665,6 +653,7 @@ class VMConnector {
                 };
 
                 if (!vmConfig.host || !vmConfig.username || !vmConfig.password) {
+                    this.hideFileBrowserLoading();
                     this.showStatus('Please configure VM connection settings first', 'error');
                     return;
                 }
@@ -685,11 +674,14 @@ class VMConnector {
             if (response.ok) {
                 this.displayDirectoryContents(result.path, result.contents);
                 this.currentPath = result.path;
-                this.showStatus(`Loaded directory: ${result.path}`, 'success');
+                this.updateStarButton();
+                this.hideFileBrowserLoading();
             } else {
+                this.hideFileBrowserLoading();
                 this.showStatus(`Error: ${result.error}`, 'error');
             }
         } catch (error) {
+            this.hideFileBrowserLoading();
             this.showStatus(`Failed to browse directory: ${error.message}`, 'error');
         } finally {
             this.browseDirectoryBtn.disabled = false;
@@ -699,22 +691,195 @@ class VMConnector {
     updateNavigationButtons() {
         // Update back button
         this.navBackBtn.disabled = this.historyIndex <= 0;
-        
+
         // Update forward button
         this.navForwardBtn.disabled = this.historyIndex >= this.pathHistory.length - 1;
-        
+
         // Update tooltips with path info
         if (this.historyIndex > 0) {
             this.navBackBtn.title = `Go back to: ${this.pathHistory[this.historyIndex - 1]}`;
         } else {
             this.navBackBtn.title = 'Go back';
         }
-        
+
         if (this.historyIndex < this.pathHistory.length - 1) {
             this.navForwardBtn.title = `Go forward to: ${this.pathHistory[this.historyIndex + 1]}`;
         } else {
             this.navForwardBtn.title = 'Go forward';
         }
+    }
+
+    // Loading Indicator Methods
+    showFileBrowserLoading(message = 'Loading...') {
+        // Remove any existing loading indicator
+        this.hideFileBrowserLoading();
+
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'file-browser-loading';
+        loadingOverlay.innerHTML = `
+            <div class="loading-spinner"></div>
+            <div class="loading-text">${message}</div>
+        `;
+
+        // Add to file browser
+        this.fileBrowser.appendChild(loadingOverlay);
+    }
+
+    hideFileBrowserLoading() {
+        const loadingOverlay = this.fileBrowser.querySelector('.file-browser-loading');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    // Preview Loading Indicator Methods
+    showFilePreviewLoading(message = 'Loading file...') {
+        // Remove any existing loading indicator
+        this.hideFilePreviewLoading();
+
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'file-preview-loading';
+        loadingOverlay.innerHTML = `
+            <div class="loading-spinner"></div>
+            <div class="loading-text">${message}</div>
+        `;
+
+        // Add to preview content area
+        this.fileContentDiv.appendChild(loadingOverlay);
+    }
+
+    hideFilePreviewLoading() {
+        const loadingOverlay = this.fileContentDiv.querySelector('.file-preview-loading');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    // Bookmark Management Methods
+    loadBookmarks() {
+        try {
+            const bookmarks = localStorage.getItem('vm-bookmarks');
+            this.bookmarks = bookmarks ? JSON.parse(bookmarks) : [];
+        } catch (error) {
+            console.error('Error loading bookmarks:', error);
+            this.bookmarks = [];
+        }
+        this.renderBookmarksList();
+    }
+
+    saveBookmarks() {
+        try {
+            localStorage.setItem('vm-bookmarks', JSON.stringify(this.bookmarks));
+        } catch (error) {
+            console.error('Error saving bookmarks:', error);
+        }
+    }
+
+    toggleBookmark() {
+        const currentPath = this.currentDirectoryInput.value.trim() || '/';
+        const existingIndex = this.bookmarks.findIndex(bookmark => bookmark.path === currentPath);
+
+        if (existingIndex >= 0) {
+            // Remove bookmark
+            this.bookmarks.splice(existingIndex, 1);
+            window.notify?.success(`Removed bookmark: ${currentPath}`);
+        } else {
+            // Add bookmark
+            const bookmark = {
+                path: currentPath,
+                name: currentPath === '/' ? 'Root' : currentPath.split('/').pop() || currentPath,
+                timestamp: Date.now()
+            };
+            this.bookmarks.unshift(bookmark); // Add to beginning
+            window.notify?.success(`Bookmarked: ${currentPath}`);
+        }
+
+        this.saveBookmarks();
+        this.updateStarButton();
+        this.renderBookmarksList();
+    }
+
+    updateStarButton() {
+        const currentPath = this.currentDirectoryInput.value.trim() || '/';
+        const isBookmarked = this.bookmarks.some(bookmark => bookmark.path === currentPath);
+
+        if (isBookmarked) {
+            this.starBtn.classList.add('starred');
+            this.starBtn.textContent = '★';
+            this.starBtn.title = 'Remove bookmark';
+        } else {
+            this.starBtn.classList.remove('starred');
+            this.starBtn.textContent = '☆';
+            this.starBtn.title = 'Bookmark this path';
+        }
+    }
+
+    toggleBookmarksPanel() {
+        if (this.bookmarksPanel.classList.contains('hidden')) {
+            this.showBookmarksPanel();
+        } else {
+            this.hideBookmarksPanel();
+        }
+    }
+
+    showBookmarksPanel() {
+        this.bookmarksPanel.classList.remove('hidden');
+        this.renderBookmarksList();
+    }
+
+    hideBookmarksPanel() {
+        this.bookmarksPanel.classList.add('hidden');
+    }
+
+    renderBookmarksList() {
+        if (this.bookmarks.length === 0) {
+            this.bookmarksList.innerHTML = '<div class="no-bookmarks">No bookmarked paths yet</div>';
+            return;
+        }
+
+        const bookmarksHTML = this.bookmarks.map((bookmark, index) => `
+            <div class="bookmark-item" data-path="${bookmark.path}">
+                <div class="bookmark-path" title="${bookmark.path}">${bookmark.path}</div>
+                <div class="bookmark-actions">
+                    <button class="bookmark-delete" data-index="${index}" title="Remove bookmark">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+
+        this.bookmarksList.innerHTML = bookmarksHTML;
+
+        // Add event listeners
+        this.bookmarksList.querySelectorAll('.bookmark-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('bookmark-delete')) {
+                    this.navigateToBookmark(item.dataset.path);
+                }
+            });
+        });
+
+        this.bookmarksList.querySelectorAll('.bookmark-delete').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteBookmark(parseInt(btn.dataset.index));
+            });
+        });
+    }
+
+    navigateToBookmark(path) {
+        this.currentDirectoryInput.value = path;
+        this.browseDirectory();
+        this.hideBookmarksPanel();
+    }
+
+    deleteBookmark(index) {
+        const bookmark = this.bookmarks[index];
+        this.bookmarks.splice(index, 1);
+        this.saveBookmarks();
+        this.updateStarButton();
+        this.renderBookmarksList();
+        window.notify?.info(`Removed bookmark: ${bookmark.path}`);
     }
 }
 
