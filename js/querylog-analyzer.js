@@ -13,6 +13,7 @@ class QueryLogAnalyzer {
         this.bindValuesToggle = document.getElementById('bind-values-toggle');
         this.sortByTimeToggle = document.getElementById('sort-by-time-toggle');
         this.showHistoryBtn = document.getElementById('show-history');
+        this.toggleInputBtn = document.getElementById('toggle-querylog-input');
         this.historyModal = document.getElementById('history-modal');
         this.closeHistoryBtn = document.getElementById('close-history');
         this.clearHistoryBtn = document.getElementById('clear-history');
@@ -35,6 +36,7 @@ class QueryLogAnalyzer {
         this.bindValuesToggle.addEventListener('change', () => this.toggleBindValues());
         this.sortByTimeToggle.addEventListener('change', () => this.toggleSortByTime());
         this.showHistoryBtn.addEventListener('click', () => this.showHistory());
+        this.toggleInputBtn.addEventListener('click', () => this.toggleInputSection());
         this.closeHistoryBtn.addEventListener('click', () => this.hideHistory());
         this.clearHistoryBtn.addEventListener('click', () => this.clearAllHistory());
         
@@ -296,13 +298,10 @@ class QueryLogAnalyzer {
 
         // Add summary information
         const summaryHTML = `
-            <div class="query-summary">
-                <h4>📊 Performance Summary</h4>
-                <div class="summary-stats">
-                    <span class="summary-item">🐌 Slow queries (>100ms): <strong>${analysis.slowQueries.length}</strong></span>
-                    <span class="summary-item">⚡ Fast queries (≤10ms): <strong>${analysis.fastQueries.length}</strong></span>
-                    <span class="summary-item">🎯 Slowest query: <strong>#${queries[0].originalIndex || queries[0].index + 1} (${queries[0].time.toFixed(2)}ms)</strong></span>
-                </div>
+            <div class="query-summary-compact">
+                <span class="summary-compact-item">🐌 ${analysis.slowQueries.length}</span>
+                <span class="summary-compact-item">⚡ ${analysis.fastQueries.length}</span>
+                <span class="summary-compact-item">🎯 #${queries[0].originalIndex || queries[0].index + 1} (${queries[0].time.toFixed(2)}ms)</span>
             </div>
         `;
 
@@ -446,28 +445,25 @@ class QueryLogAnalyzer {
     }
 
     showCopyNotification(message) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'copy-notification';
-        notification.textContent = message;
-
-        // Add to page
-        document.body.appendChild(notification);
-
-        // Trigger animation
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 10);
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
+        // Use global notification system
+        if (window.notify) {
+            window.notify.success(message);
+        } else {
+            // Fallback to old system
+            const notification = document.createElement('div');
+            notification.className = 'copy-notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 10);
             setTimeout(() => {
-                if (notification.parentNode) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
     }
 
     getTimeClass(time) {
@@ -504,11 +500,28 @@ class QueryLogAnalyzer {
     }
 
     showStatus(message, type) {
-        this.statusDiv.textContent = message;
-        this.statusDiv.className = `status-message ${type}`;
-
-        if (type === 'success') {
-            setTimeout(() => this.hideStatus(), 3000);
+        // Use global notification system
+        if (window.notify) {
+            switch (type) {
+                case 'success':
+                    window.notify.success(message);
+                    break;
+                case 'error':
+                    window.notify.error(message);
+                    break;
+                case 'warning':
+                    window.notify.warning(message);
+                    break;
+                default:
+                    window.notify.info(message);
+            }
+        } else {
+            // Fallback to old system
+            this.statusDiv.textContent = message;
+            this.statusDiv.className = `status-message ${type}`;
+            if (type === 'success') {
+                setTimeout(() => this.hideStatus(), 3000);
+            }
         }
     }
 
@@ -626,6 +639,26 @@ class QueryLogAnalyzer {
             this.renderHistoryList();
             this.showStatus('History cleared successfully!', 'success');
         }
+    }
+
+    toggleInputSection() {
+        const inputSection = this.querylogInput.closest('.input-section');
+        const isCollapsed = inputSection.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            inputSection.classList.remove('collapsed');
+            this.toggleInputBtn.textContent = '▲';
+            this.toggleInputBtn.title = 'Collapse QueryLog Data';
+        } else {
+            // Collapse
+            inputSection.classList.add('collapsed');
+            this.toggleInputBtn.textContent = '▼';
+            this.toggleInputBtn.title = 'Expand QueryLog Data';
+        }
+        
+        // Force a reflow to ensure the changes take effect
+        inputSection.offsetHeight;
     }
 }
 

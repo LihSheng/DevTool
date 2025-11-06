@@ -5,6 +5,11 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100vh;
+    overflow: hidden; /* Prevent any scrolling on html */
+}
+
 :root {
     /* Light mode colors */
     --bg-gradient-start: #667eea;
@@ -51,147 +56,256 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-    min-height: 100vh;
+    background: var(--bg-primary);
+    height: 100vh; /* Fixed height instead of min-height */
     color: var(--text-primary);
     transition: all 0.3s ease;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent any scrolling on body */
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* App Layout */
+.app-layout {
+    display: flex;
+    height: 100vh; /* Fixed height */
+    overflow: hidden; /* Prevent scrolling */
 }
 
-/* Header */
-header {
-    margin-bottom: 30px;
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 100;
 }
 
-.header-content {
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
 }
 
-.header-text {
-    text-align: center;
-    flex: 1;
-}
-
-.header-controls {
+.logo {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
 }
 
-.dark-mode-toggle .toggle-label {
-    color: white;
-    font-weight: 500;
+.logo h1 {
+    font-size: 2rem;
+    margin: 0;
 }
 
-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    font-weight: 300;
-}
-
-header p {
+.logo span {
     font-size: 1.1rem;
+    font-weight: 600;
     opacity: 0.9;
 }
 
-/* Navigation */
-.tool-nav {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 30px;
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
 }
 
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    background: var(--bg-primary);
+    overflow: hidden; /* No scrolling on main content */
+    position: relative;
+}
+
+/* Sidebar Navigation */
 .nav-btn {
-    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
     border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-radius: 25px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: left;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    border-left: 3px solid transparent;
 }
 
 .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .nav-btn.active {
-    background: white;
-    color: #667eea;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
     font-weight: 600;
+    border-left-color: white;
 }
 
-/* Tool panels */
+.nav-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.nav-text {
+    flex: 1;
+}
+
+/* Dark Mode Toggle in Sidebar */
+.sidebar .dark-mode-toggle .toggle-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+/* Tool panels - Single Page Application */
 .tool-panel {
-    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: var(--bg-primary);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 20px 40px var(--shadow-color);
-    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    box-sizing: border-box;
+    overflow: hidden; /* No scrolling for SPA */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .tool-panel.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    visibility: visible;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
     }
-}
-
-.tool-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--bg-tertiary);
-}
-
-.tool-header h2 {
-    font-size: 2rem;
-    color: var(--text-primary);
-    margin-bottom: 10px;
-}
-
-.tool-header p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
 }
 
 /* Tool content layout */
 .tool-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 20px;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0; /* Important for flex children */
 }
 
-/* QueryLog specific layout - vertical stacking */
+/* QueryLog specific layout - vertical stacking with scrolling */
 .tool-content.querylog-layout {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 0; /* No gaps between sections */
+    flex: 1;
+    min-height: 0;
+}
+
+/* Compact QueryLog input */
+.tool-content.querylog-layout .input-section {
+    flex: 0.5; /* Reduced flex to take less space */
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.tool-content.querylog-layout .input-section textarea {
+    min-height: 100px;
+    max-height: 150px;
+    transition: all 0.3s ease;
+}
+
+.tool-content.querylog-layout .input-section label {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Collapsed QueryLog input */
+.tool-content.querylog-layout .input-section.collapsed {
+    flex: 0 0 auto !important;
+    min-height: 65px !important; /* Increased to accommodate full button height */
+    max-height: 65px !important; /* Enough height for label + buttons */
+    margin-bottom: 0.75rem !important; /* Add margin to separate from stats */
+}
+
+.tool-content.querylog-layout .input-section.collapsed textarea {
+    display: none !important;
+    opacity: 0;
+    height: 0;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0;
+    padding: 0;
+}
+
+.tool-content.querylog-layout .input-section.collapsed label {
+    margin-bottom: 0.25rem !important; /* Reduce label margin when collapsed */
+}
+
+.tool-content.querylog-layout .input-section.collapsed .button-group {
+    margin-top: 0.5rem !important; /* Proper margin for button visibility */
+    margin-bottom: 0.25rem !important; /* Bottom margin to prevent cutting */
+}
+
+/* Toggle button styling */
+#toggle-querylog-input {
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.9rem;
+    min-width: 35px;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+#toggle-querylog-input:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+/* JSON Formatter - optimized for SPA */
+.tool-content.json-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+}
+
+/* VM Connector - SPA layout */
+.tool-panel.vm-layout {
+    gap: 0.5rem;
+}
+
+.tool-panel.vm-layout .vm-main-content {
+    height: calc(100vh - 10rem); /* Fixed height for SPA */
 }
 
 .full-width {
@@ -199,11 +313,16 @@ header p {
 }
 
 .stats-section {
-    margin: 20px 0;
+    flex-shrink: 0; /* Don't shrink stats */
+    margin-bottom: 0.5rem; /* Small spacing after stats */
 }
 
 .queries-section {
-    margin-top: 20px;
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Allow scrolling */
+    display: flex;
+    flex-direction: column;
+    margin-top: 0; /* No extra top margin */
 }
 
 @media (max-width: 768px) {
@@ -216,6 +335,8 @@ header p {
 .output-section {
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Important for flex children */
+    flex: 1; /* Take equal space */
 }
 
 label {
@@ -226,17 +347,20 @@ label {
 }
 
 textarea {
-    min-height: 300px;
+    min-height: 200px;
+    max-height: calc(100vh - 20rem); /* Constrain for SPA */
     padding: 15px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     line-height: 1.5;
-    resize: vertical;
+    resize: none; /* Disable resize to prevent overflow */
     transition: border-color 0.3s ease;
     background: var(--bg-primary);
     color: var(--text-primary);
+    flex: 1; /* Take available space in flex containers */
+    overflow-y: auto; /* Internal scrolling only */
 }
 
 textarea:focus {
@@ -252,9 +376,20 @@ textarea[readonly] {
 /* Buttons */
 .button-group {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
     flex-wrap: wrap;
+}
+
+/* Compact buttons for QueryLog */
+.tool-content.querylog-layout .button-group {
+    margin-top: 0.25rem;
+    gap: 0.25rem;
+}
+
+.tool-content.querylog-layout .button-group button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
 }
 
 button {
@@ -282,79 +417,188 @@ button:active {
     transform: translateY(0);
 }
 
-/* Status messages */
+/* Status messages - Hidden (using floating notifications now) */
 .status-message {
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
+    display: none !important;
+}
+
+/* Enhanced JSON Formatter */
+.json-validation-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.json-validation-indicator.valid {
+    background: rgba(40, 167, 69, 0.1);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.json-validation-indicator.invalid {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.validation-icon {
+    font-size: 1rem;
+}
+
+.validation-text {
     font-weight: 500;
-    text-align: center;
+}
+
+.upload-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+}
+
+/* Enhanced textarea styling */
+#json-input,
+#json-output {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    tab-size: 2;
+}
+
+#json-input:focus,
+#json-output:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Keyboard shortcuts hint */
+/* Keyboard shortcuts hint - only for JSON formatter */
+.tool-content.json-layout .input-section::after {
+    content: "💡 Shortcuts: Ctrl+Enter (Format), Ctrl+M (Minify), Ctrl+K (Clear)";
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    opacity: 0.7;
+}
+
+/* No shortcuts hint for QueryLog analyzer */
+.tool-content.querylog-layout .input-section::after {
     display: none;
 }
 
-.status-message.success {
-    background: var(--success-color);
-    color: white;
-    border: 1px solid var(--success-color);
-    display: block;
-}
-
-.status-message.error {
-    background: var(--error-color);
-    color: white;
-    border: 1px solid var(--error-color);
-    display: block;
-}
-
-.status-message.info {
-    background: var(--accent-color);
-    color: white;
-    border: 1px solid var(--accent-color);
-    display: block;
-}
-
 /* QueryLog specific styles */
+/* Compact Stats Layout */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Alternative: Inline Stats Bar */
+.stats-inline {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, var(--accent-color), var(--bg-gradient-end));
+    color: white;
+    border-radius: 4px;
+    margin-bottom: 0.5rem; /* Small margin for visual separation */
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.stats-inline .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stats-inline .stat-label {
+    opacity: 0.8;
+}
+
+.stats-inline .stat-value {
+    font-weight: bold;
 }
 
 .stat-card {
     background: linear-gradient(135deg, var(--accent-color), var(--bg-gradient-end));
     color: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
     text-align: center;
-    box-shadow: 0 5px 15px var(--shadow-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .stat-card h3 {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
     opacity: 0.9;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    line-height: 1;
 }
 
 .stat-card span {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: bold;
     display: block;
+    line-height: 1;
 }
 
 .queries-list {
-    margin-top: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#queries-table {
+    flex: 1;
+    overflow-y: auto; /* Only queries table scrolls */
+    min-height: 400px;
+    max-height: calc(100vh - 8rem); /* Even more space for queries */
 }
 
 .queries-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 0.5rem;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 0.5rem;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.queries-header h3 {
+    font-size: 1rem;
+    margin: 0;
 }
 
 .queries-list h3 {
@@ -426,29 +670,26 @@ input:checked+.slider:before {
     border: 1px solid #e0e0e0;
 }
 
-.query-summary {
-    background: var(--bg-secondary);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border-left: 4px solid var(--accent-color);
-}
-
-.query-summary h4 {
-    margin-bottom: 15px;
-    color: var(--text-primary);
-    font-size: 1.1rem;
-}
-
-.summary-stats {
+/* Compact Performance Summary */
+.query-summary-compact {
     display: flex;
+    gap: 1rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    margin-bottom: 0.1rem; /* Minimal margin */
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--accent-color);
     flex-wrap: wrap;
-    gap: 20px;
+    align-items: center;
 }
 
-.summary-item {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+.summary-compact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 500;
 }
 
 .table-header {
@@ -572,31 +813,173 @@ input:checked+.slider:before {
     transform: translateY(0);
 }
 
-/* Copy Notification */
-.copy-notification {
+/* Global Notification System */
+.notification-container {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: var(--success-color);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px var(--shadow-color);
-    z-index: 1000;
-    transform: translateX(100%);
-    opacity: 0;
-    transition: all 0.3s ease;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    pointer-events: none;
 }
 
-.copy-notification.show {
+.notification {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    overflow: hidden;
+    position: relative;
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.notification-show {
     transform: translateX(0);
     opacity: 1;
 }
 
-.copy-notification::before {
-    content: '✅';
-    margin-right: 8px;
+.notification-hide {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    position: relative;
+}
+
+.notification-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.notification-message {
+    flex: 1;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.3;
+    animation: notification-progress-bar linear;
+    transform-origin: left;
+}
+
+@keyframes notification-progress-bar {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* Notification Types */
+.notification-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.notification-success .notification-progress {
+    background: var(--success-color);
+}
+
+.notification-error {
+    border-left: 4px solid var(--error-color);
+}
+
+.notification-error .notification-progress {
+    background: var(--error-color);
+}
+
+.notification-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.notification-warning .notification-progress {
+    background: var(--warning-color);
+}
+
+.notification-info {
+    border-left: 4px solid var(--accent-color);
+}
+
+.notification-info .notification-progress {
+    background: var(--accent-color);
+}
+
+.notification-loading {
+    border-left: 4px solid var(--accent-color);
+}
+
+.notification-loading .notification-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Notifications */
+@media (max-width: 768px) {
+    .notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .notification {
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .notification-content {
+        padding: 12px;
+    }
+    
+    .notification-message {
+        font-size: 13px;
+    }
 }
 
 /* History Modal */
@@ -834,11 +1217,12 @@ input:checked+.slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     background: var(--bg-secondary);
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0; /* Don't shrink */
 }
 
 .vm-status-compact {
@@ -883,7 +1267,8 @@ input:checked+.slider:before {
     background: var(--bg-secondary);
     border-radius: 6px;
     border: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0; /* Don't shrink */
 }
 
 .vm-settings-form-compact.hidden {
@@ -919,9 +1304,9 @@ input:checked+.slider:before {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    height: 600px;
+    flex: 1;
     min-height: 0;
-    /* Important for grid scrolling */
+    max-height: calc(100vh - 8rem); /* Constrain height for SPA */
 }
 
 /* File Explorer Panel */
@@ -933,8 +1318,8 @@ input:checked+.slider:before {
     border: 1px solid var(--border-color);
     overflow: hidden;
     min-height: 0;
-    height: 600px;
-    /* Fixed height to enable scrolling */
+    height: 100%;
+    max-height: calc(100vh - 12rem); /* Constrain for SPA */
 }
 
 .explorer-header {
@@ -1041,8 +1426,8 @@ input:checked+.slider-mini:before {
     overflow-y: auto;
     background: var(--bg-primary);
     min-height: 0;
-    height: 0;
-    /* Force flex shrinking */
+    height: 0; /* Force flex shrinking */
+    max-height: calc(100vh - 15rem); /* Constrain height */
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
 }
@@ -1516,9 +1901,57 @@ input:checked+.slider-mini:before {
         justify-content: center;
     }
 
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+
+    .sidebar-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        overflow-x: auto;
+        padding: 0.5rem;
+    }
+
+    .nav-btn {
+        flex-direction: column;
+        min-width: 120px;
+        padding: 1rem;
+        text-align: center;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .nav-btn.active,
+    .nav-btn:hover {
+        border-left: none;
+        border-bottom-color: white;
+    }
+
     .vm-main-content {
         grid-template-columns: 1fr;
-        height: auto;
+        max-height: none; /* Allow scrolling on mobile */
+    }
+    
+    .tool-panel {
+        position: relative; /* Reset positioning on mobile */
+        height: auto; /* Allow scrolling on mobile */
+        overflow-y: auto;
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .tool-panel:not(.active) {
+        display: none; /* Hide inactive panels on mobile */
     }
 
     .vm-settings-bar {

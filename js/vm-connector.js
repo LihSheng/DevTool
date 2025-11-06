@@ -19,7 +19,7 @@ class VMConnector {
         this.connectionInfo = document.getElementById('connection-info');
         this.statusDiv = document.getElementById('vm-status');
         this.fileContentDiv = document.getElementById('vm-file-content');
-        
+
         // File browser elements
         this.browserModeToggle = document.getElementById('browser-mode-toggle');
         this.fileBrowserSection = document.getElementById('file-browser-section');
@@ -27,11 +27,11 @@ class VMConnector {
         this.currentDirectoryInput = document.getElementById('current-directory');
         this.browseDirectoryBtn = document.getElementById('browse-directory');
         this.fileBrowser = document.getElementById('file-browser');
-        
+
         // Preview elements
         this.previewTitle = document.getElementById('preview-title');
         this.previewActions = document.getElementById('preview-actions');
-        
+
         // Track state
         this.settingsVisible = false;
         this.hasDefaults = false;
@@ -46,12 +46,12 @@ class VMConnector {
         this.toggleSettingsBtn.addEventListener('click', () => this.toggleSettings());
         this.browserModeToggle.addEventListener('change', () => this.toggleBrowserMode());
         this.browseDirectoryBtn.addEventListener('click', () => this.browseDirectory());
-        
+
         // Manual mode connect button
         if (this.connectBtn) {
             this.connectBtn.addEventListener('click', () => this.getFileFromVM());
         }
-        
+
         // Allow Enter key to trigger actions
         [this.vmHostInput, this.vmUsernameInput, this.vmPasswordInput].forEach(input => {
             if (input) {
@@ -62,7 +62,7 @@ class VMConnector {
                 });
             }
         });
-        
+
         if (this.filePathInput) {
             this.filePathInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -70,7 +70,7 @@ class VMConnector {
                 }
             });
         }
-        
+
         this.currentDirectoryInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.browseDirectory();
@@ -80,7 +80,7 @@ class VMConnector {
 
     async getFileFromVM() {
         let filePath;
-        
+
         if (this.browserMode) {
             filePath = this.selectedFilePath;
             if (!filePath) {
@@ -115,7 +115,7 @@ class VMConnector {
                 this.showStatus('Please fill in all required VM connection fields', 'error');
                 return;
             }
-            
+
             requestData.vmConfig = vmConfig;
         }
 
@@ -148,7 +148,7 @@ class VMConnector {
 
     displayFileContent(content, filePath) {
         const fileExtension = filePath.split('.').pop().toLowerCase();
-        
+
         // Determine content type for syntax highlighting
         let language = 'text';
         if (['js', 'javascript'].includes(fileExtension)) language = 'javascript';
@@ -182,7 +182,7 @@ class VMConnector {
     async copyToClipboard(content) {
         try {
             await navigator.clipboard.writeText(content);
-            this.showStatus('File content copied to clipboard!', 'success');
+            window.notify.success('📋 File content copied to clipboard!');
         } catch (error) {
             // Fallback for older browsers
             const textArea = document.createElement('textarea');
@@ -191,7 +191,7 @@ class VMConnector {
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            this.showStatus('File content copied to clipboard!', 'success');
+            window.notify.success('📋 File content copied to clipboard!');
         }
     }
 
@@ -205,7 +205,7 @@ class VMConnector {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        this.showStatus(`File downloaded: ${filename}`, 'success');
+        window.notify.success(`💾 File downloaded: ${filename}`);
     }
 
     escapeHtml(text) {
@@ -215,11 +215,28 @@ class VMConnector {
     }
 
     showStatus(message, type) {
-        this.statusDiv.textContent = message;
-        this.statusDiv.className = `status-message ${type}`;
-
-        if (type === 'success') {
-            setTimeout(() => this.hideStatus(), 3000);
+        // Use global notification system
+        if (window.notify) {
+            switch (type) {
+                case 'success':
+                    window.notify.success(message);
+                    break;
+                case 'error':
+                    window.notify.error(message);
+                    break;
+                case 'warning':
+                    window.notify.warning(message);
+                    break;
+                default:
+                    window.notify.info(message);
+            }
+        } else {
+            // Fallback to old system if notifications not loaded
+            this.statusDiv.textContent = message;
+            this.statusDiv.className = `status-message ${type}`;
+            if (type === 'success') {
+                setTimeout(() => this.hideStatus(), 3000);
+            }
         }
     }
 
@@ -232,17 +249,17 @@ class VMConnector {
             const response = await fetch('/api/vm-defaults');
             if (response.ok) {
                 const defaults = await response.json();
-                
+
                 // Set default values from .env
                 this.vmHostInput.value = defaults.host;
                 this.vmPortInput.value = defaults.port;
                 this.vmUsernameInput.value = defaults.username;
                 this.filePathInput.value = defaults.defaultFilePath;
-                
+
                 // Update connection status
                 this.hasDefaults = !!(defaults.host && defaults.username);
                 this.updateConnectionStatus(defaults);
-                
+
                 // Show status if defaults were loaded
                 if (defaults.host) {
                     this.showStatus('Default VM settings loaded from configuration', 'info');
@@ -258,7 +275,7 @@ class VMConnector {
 
     toggleSettings() {
         this.settingsVisible = !this.settingsVisible;
-        
+
         if (this.settingsVisible) {
             this.settingsForm.classList.remove('hidden');
             this.toggleSettingsBtn.textContent = '🔒 Hide Settings';
@@ -283,7 +300,7 @@ class VMConnector {
 
     toggleBrowserMode() {
         this.browserMode = this.browserModeToggle.checked;
-        
+
         if (this.browserMode) {
             this.fileBrowserSection.classList.remove('hidden');
             this.manualPathSection.classList.add('hidden');
@@ -297,7 +314,7 @@ class VMConnector {
 
     async browseDirectory() {
         const directoryPath = this.currentDirectoryInput.value.trim() || '/';
-        
+
         this.showStatus('Loading directory...', 'info');
         this.browseDirectoryBtn.disabled = true;
 
@@ -320,7 +337,7 @@ class VMConnector {
                     this.showStatus('Please configure VM connection settings first', 'error');
                     return;
                 }
-                
+
                 requestData.vmConfig = vmConfig;
             }
 
@@ -355,7 +372,7 @@ class VMConnector {
         }
 
         let html = '<div class="file-list">';
-        
+
         // Add parent directory link if not at root
         if (path !== '/') {
             const parentPath = path.split('/').slice(0, -1).join('/') || '/';
@@ -401,14 +418,14 @@ class VMConnector {
         if (isFile) {
             // Select file
             this.selectedFilePath = path;
-            
+
             // Update visual selection
             this.fileBrowser.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
             item.classList.add('selected');
-            
+
             // Auto-preview the file
             this.previewFile(path);
-            
+
             this.showStatus(`Selected file: ${path}`, 'info');
         } else {
             // Navigate to directory
@@ -420,7 +437,7 @@ class VMConnector {
     async previewFile(filePath) {
         this.previewTitle.textContent = `Loading ${filePath.split('/').pop()}...`;
         this.previewActions.classList.add('hidden');
-        
+
         try {
             const requestData = {
                 filePath: filePath,
@@ -440,7 +457,7 @@ class VMConnector {
                     this.showPreviewError('VM connection not configured');
                     return;
                 }
-                
+
                 requestData.vmConfig = vmConfig;
             }
 
@@ -471,7 +488,7 @@ class VMConnector {
     displayFilePreview(content, filePath) {
         const fileName = filePath.split('/').pop();
         const fileExtension = fileName.split('.').pop().toLowerCase();
-        
+
         // Determine content type for syntax highlighting
         let language = 'text';
         if (['js', 'javascript'].includes(fileExtension)) language = 'javascript';
@@ -483,7 +500,7 @@ class VMConnector {
 
         this.previewTitle.textContent = `📄 ${fileName}`;
         this.previewActions.classList.remove('hidden');
-        
+
         this.fileContentDiv.innerHTML = `
             <pre class="file-content-preview ${language}"><code>${this.escapeHtml(content)}</code></pre>
         `;
@@ -549,10 +566,10 @@ class VMConnector {
         this.currentDirectoryInput.value = '/';
         this.selectedFilePath = '';
         this.currentFileContent = '';
-        
+
         // Reset file browser
         this.fileBrowser.innerHTML = '<div class="browser-placeholder">Click 📂 to explore directories</div>';
-        
+
         // Reset preview panel
         this.previewTitle.textContent = 'Select a file to preview';
         this.previewActions.classList.add('hidden');
@@ -563,7 +580,7 @@ class VMConnector {
                 <small>Browse and click on a file to view its contents</small>
             </div>
         `;
-        
+
         this.hideStatus();
         this.showStatus('Form cleared', 'info');
         setTimeout(() => this.hideStatus(), 1500);
