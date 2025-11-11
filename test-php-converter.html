@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PHP Converter</title>
+</head>
+<body>
+    <h1>Test PHP Array Converter</h1>
+    <textarea id="input" style="width:100%;height:200px">array ('0_serial_number' => array ('header' => 'S/No','footer' => false,'horizontal' => 'left','is_currency' => false,'width' => 5,)</textarea>
+    <button onclick="test()">Test Convert</button>
+    <pre id="output" style="background:#f0f0f0;padding:10px;margin-top:10px;"></pre>
+    
+    <script src="js/json-to-php.js"></script>
+    <script>
+        function test() {
+            const converter = new JsonToPhpConverter();
+            const input = document.getElementById('input').value;
+            const output = document.getElementById('output');
+            
+            try {
+                const result = converter.phpArrayToJson(input);
+                output.textContent = 'Success!\n' + JSON.stringify(result, null, 2);
+                output.style.color = 'green';
+            } catch (e) {
+                output.textContent = 'Error: ' + e.message;
+                output.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>

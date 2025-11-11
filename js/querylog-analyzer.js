@@ -60,23 +60,35 @@ class QueryLogAnalyzer {
             return;
         }
 
-        try {
-            let queries = this.parseQueryLogInput(input);
-            if (!queries || queries.length === 0) {
-                this.showStatus('No valid queries found in the input', 'error');
-                return;
-            }
+        // Show loading overlay
+        this.showInputLoading('Analyzing queries...');
+        this.analyzeBtn.disabled = true;
 
-            const analysis = this.performAnalysis(queries);
-            this.displayResults(analysis);
-            
-            // Save to history
-            this.saveToHistory(input, analysis);
-            
-            this.showStatus(`Successfully analyzed ${queries.length} queries!`, 'success');
-        } catch (error) {
-            this.showStatus(`Error analyzing queries: ${error.message}`, 'error');
-        }
+        // Use setTimeout to allow UI to update before processing
+        setTimeout(() => {
+            try {
+                let queries = this.parseQueryLogInput(input);
+                if (!queries || queries.length === 0) {
+                    this.hideInputLoading();
+                    this.showStatus('No valid queries found in the input', 'error');
+                    return;
+                }
+
+                const analysis = this.performAnalysis(queries);
+                this.displayResults(analysis);
+                
+                // Save to history
+                this.saveToHistory(input, analysis);
+                
+                this.hideInputLoading();
+                this.showStatus(`Successfully analyzed ${queries.length} queries!`, 'success');
+            } catch (error) {
+                this.hideInputLoading();
+                this.showStatus(`Error analyzing queries: ${error.message}`, 'error');
+            } finally {
+                this.analyzeBtn.disabled = false;
+            }
+        }, 100); // Small delay to show loading effect
     }
 
     parseQueryLogInput(input) {
@@ -562,25 +574,51 @@ class QueryLogAnalyzer {
     }
 
     saveToHistory(inputData, analysis) {
-        const historyItem = {
-            id: Date.now(),
-            timestamp: new Date().toLocaleString(),
-            inputData: inputData,
-            analysis: analysis,
-            preview: this.generatePreview(analysis.originalQueries || analysis.sortedQueries)
-        };
+        try {
+            // Only store essential summary data, not the full input or queries
+            const historyItem = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString(),
+                // Store only a truncated preview of input data (max 500 chars)
+                inputPreview: inputData.substring(0, 500) + (inputData.length > 500 ? '...' : ''),
+                // Store only summary statistics, not full queries
+                summary: {
+                    totalQueries: analysis.totalQueries,
+                    totalTime: analysis.totalTime,
+                    avgTime: analysis.avgTime,
+                    slowestTime: analysis.slowestTime,
+                    fastestTime: analysis.fastestTime,
+                    slowQueriesCount: analysis.slowQueries.length,
+                    mediumQueriesCount: analysis.mediumQueries.length,
+                    fastQueriesCount: analysis.fastQueries.length
+                },
+                preview: this.generatePreview(analysis.originalQueries || analysis.sortedQueries)
+            };
 
-        // Get existing history
-        let history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
-        
-        // Add new item to beginning
-        history.unshift(historyItem);
-        
-        // Keep only last 20 items
-        history = history.slice(0, 20);
-        
-        // Save back to localStorage
-        localStorage.setItem('querylog-history', JSON.stringify(history));
+            // Get existing history
+            let history = JSON.parse(localStorage.getItem('querylog-history') || '[]');
+            
+            // Add new item to beginning
+            history.unshift(historyItem);
+            
+            // Keep only last 10 items (reduced from 20 to save space)
+            history = history.slice(0, 10);
+            
+            // Save back to localStorage
+            localStorage.setItem('querylog-history', JSON.stringify(history));
+        } catch (error) {
+            // If localStorage is full or unavailable, silently fail
+            console.warn('Could not save to history:', error.message);
+            // Optionally clear old history and try again
+            if (error.name === 'QuotaExceededError') {
+                try {
+                    localStorage.removeItem('querylog-history');
+                    console.log('Cleared history due to quota exceeded');
+                } catch (e) {
+                    console.error('Could not clear history:', e);
+                }
+            }
+        }
     }
 
     generatePreview(queries) {
@@ -606,18 +644,23 @@ class QueryLogAnalyzer {
             return;
         }
 
-        const historyHTML = history.map(item => `
-            <div class="history-item" data-id="${item.id}">
-                <div class="history-item-header">
-                    <span class="history-timestamp">${item.timestamp}</span>
-                    <div>
-                        <span class="history-stats">${item.analysis.totalQueries} queries • ${item.analysis.totalTime.toFixed(2)}ms</span>
-                        <button class="history-delete" data-id="${item.id}" onclick="event.stopPropagation()">Delete</button>
+        const historyHTML = history.map(item => {
+            // Support both old format (with analysis) and new format (with summary)
+            const stats = item.summary || item.analysis;
+            return `
+                <div class="history-item" data-id="${item.id}">
+                    <div class="history-item-header">
+                        <span class="history-timestamp">${item.timestamp}</span>
+                        <div>
+                            <span class="history-stats">${stats.totalQueries} queries • ${stats.totalTime.toFixed(2)}ms</span>
+                            <button class="history-delete" data-id="${item.id}" onclick="event.stopPropagation()">Delete</button>
+                        </div>
                     </div>
+                    <div class="history-preview">${item.preview}</div>
+                    ${!item.inputData && !item.inputPreview ? '<div class="history-note">Summary only - full data not available</div>' : ''}
                 </div>
-                <div class="history-preview">${item.preview}</div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         this.historyList.innerHTML = historyHTML;
 
@@ -644,17 +687,23 @@ class QueryLogAnalyzer {
         const item = history.find(h => h.id === id);
         
         if (item) {
-            // Restore input data
-            this.querylogInput.value = item.inputData;
-            
-            // Restore analysis
-            this.currentAnalysis = item.analysis;
-            this.displayResults(item.analysis);
-            
-            // Close modal
-            this.hideHistory();
-            
-            this.showStatus('History item loaded successfully!', 'success');
+            // Check if full data is available (old format) or only summary (new format)
+            if (item.inputData && item.analysis) {
+                // Old format - full data available
+                this.querylogInput.value = item.inputData;
+                this.currentAnalysis = item.analysis;
+                this.displayResults(item.analysis);
+                this.hideHistory();
+                this.showStatus('History item loaded successfully!', 'success');
+            } else if (item.inputPreview) {
+                // New format - only summary available
+                this.hideHistory();
+                window.notify?.warning('This history item only contains a summary. Full query data is not available.');
+            } else {
+                // Unknown format
+                this.hideHistory();
+                window.notify?.error('Unable to load this history item.');
+            }
         }
     }
 
@@ -751,6 +800,32 @@ class QueryLogAnalyzer {
     toggleClearButton() {
         const hasValue = this.querySearchInput.value.length > 0;
         this.clearSearchBtn.classList.toggle('visible', hasValue);
+    }
+
+    // Input Loading Methods
+    showInputLoading(message = 'Processing...') {
+        // Remove any existing loading indicator
+        this.hideInputLoading();
+        
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'querylog-input-loading';
+        loadingOverlay.innerHTML = `
+            <div class="loading-spinner"></div>
+            <div class="loading-text">${message}</div>
+        `;
+        
+        // Add to input section
+        const inputSection = this.querylogInput.closest('.input-section');
+        inputSection.appendChild(loadingOverlay);
+    }
+
+    hideInputLoading() {
+        const inputSection = this.querylogInput.closest('.input-section');
+        const loadingOverlay = inputSection.querySelector('.querylog-input-loading');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
     }
 }
 

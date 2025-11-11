@@ -39,6 +39,10 @@
                     <span class="nav-icon">🖥️</span>
                     <span class="nav-text">VM File Connector</span>
                 </button>
+                <button class="nav-btn" data-tool="json-to-php">
+                    <span class="nav-icon">🔄</span>
+                    <span class="nav-text">JSON to PHP Array</span>
+                </button>
             </nav>
 
             <div class="sidebar-footer">
@@ -230,6 +234,33 @@
                 <div id="vm-status" class="status-message"></div>
             </div>
 
+            <!-- JSON ⇄ PHP Array Tool -->
+            <div id="json-to-php" class="tool-panel">
+                <div class="tool-content json-layout">
+                    <div class="input-section">
+                        <label for="json-to-php-input">
+                            <span id="input-label">JSON Input</span>
+                        </label>
+                        <textarea id="json-to-php-input" placeholder='{"name": "John", "age": 30, "active": true}'></textarea>
+                        <div class="button-group">
+                            <button id="convert-to-php">Convert →</button>
+                            <button id="swap-direction" title="Swap conversion direction">⇄</button>
+                            <button id="clear-json-php">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="output-section">
+                        <label for="php-output">
+                            <span id="output-label">PHP Array Output</span>
+                        </label>
+                        <textarea id="php-output" readonly></textarea>
+                        <div class="button-group">
+                            <button id="copy-php">Copy to Clipboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -258,6 +289,7 @@
     <script src="js/json-formatter.js"></script>
     <script src="js/querylog-analyzer.js"></script>
     <script src="js/vm-connector.js"></script>
+    <script src="js/json-to-php.js"></script>
     <script>
         // Navigation functionality
         document.querySelectorAll('.nav-btn').forEach(btn => {

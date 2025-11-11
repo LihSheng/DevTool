@@ -7,7 +7,8 @@
 
 html {
     height: 100vh;
-    overflow: hidden; /* Prevent any scrolling on html */
+    overflow: hidden;
+    /* Prevent any scrolling on html */
 }
 
 :root {
@@ -57,19 +58,23 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: var(--bg-primary);
-    height: 100vh; /* Fixed height instead of min-height */
+    height: 100vh;
+    /* Fixed height instead of min-height */
     color: var(--text-primary);
     transition: all 0.3s ease;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent any scrolling on body */
+    overflow: hidden;
+    /* Prevent any scrolling on body */
 }
 
 /* App Layout */
 .app-layout {
     display: flex;
-    height: 100vh; /* Fixed height */
-    overflow: hidden; /* Prevent scrolling */
+    height: 100vh;
+    /* Fixed height */
+    overflow: hidden;
+    /* Prevent scrolling */
 }
 
 /* Sidebar */
@@ -90,7 +95,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 60px; /* Fixed height for consistency */
+    min-height: 60px;
+    /* Fixed height for consistency */
 }
 
 .logo {
@@ -144,7 +150,7 @@ body {
     bottom: 2px;
 }
 
-.sidebar-header .toggle-switch input:checked + .slider:before {
+.sidebar-header .toggle-switch input:checked+.slider:before {
     transform: translateX(20px);
 }
 
@@ -174,7 +180,8 @@ body {
 .main-content {
     flex: 1;
     background: var(--bg-primary);
-    overflow: hidden; /* No scrolling on main content */
+    overflow: hidden;
+    /* No scrolling on main content */
     position: relative;
 }
 
@@ -235,7 +242,8 @@ body {
     background: var(--bg-primary);
     padding: 1.5rem;
     box-sizing: border-box;
-    overflow: hidden; /* No scrolling for SPA */
+    overflow: hidden;
+    /* No scrolling for SPA */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -264,24 +272,28 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     flex: 1;
-    min-height: 0; /* Important for flex children */
+    min-height: 0;
+    /* Important for flex children */
 }
 
 /* QueryLog specific layout - vertical stacking with scrolling */
 .tool-content.querylog-layout {
     display: flex;
     flex-direction: column;
-    gap: 0; /* No gaps between sections */
+    gap: 0;
+    /* No gaps between sections */
     flex: 1;
     min-height: 0;
 }
 
 /* Compact QueryLog input */
 .tool-content.querylog-layout .input-section {
-    flex: 0.5; /* Reduced flex to take less space */
+    flex: 0.5;
+    /* Reduced flex to take less space */
     flex-shrink: 0;
     transition: all 0.3s ease;
     overflow: hidden;
+    position: relative;
 }
 
 .tool-content.querylog-layout .input-section textarea {
@@ -298,9 +310,12 @@ body {
 /* Collapsed QueryLog input */
 .tool-content.querylog-layout .input-section.collapsed {
     flex: 0 0 auto !important;
-    min-height: 65px !important; /* Increased to accommodate full button height */
-    max-height: 65px !important; /* Enough height for label + buttons */
-    margin-bottom: 0.75rem !important; /* Add margin to separate from stats */
+    min-height: 65px !important;
+    /* Increased to accommodate full button height */
+    max-height: 65px !important;
+    /* Enough height for label + buttons */
+    margin-bottom: 0.75rem !important;
+    /* Add margin to separate from stats */
 }
 
 .tool-content.querylog-layout .input-section.collapsed textarea {
@@ -314,12 +329,15 @@ body {
 }
 
 .tool-content.querylog-layout .input-section.collapsed label {
-    margin-bottom: 0.25rem !important; /* Reduce label margin when collapsed */
+    margin-bottom: 0.25rem !important;
+    /* Reduce label margin when collapsed */
 }
 
 .tool-content.querylog-layout .input-section.collapsed .button-group {
-    margin-top: 0.5rem !important; /* Proper margin for button visibility */
-    margin-bottom: 0.25rem !important; /* Bottom margin to prevent cutting */
+    margin-top: 0.5rem !important;
+    /* Proper margin for button visibility */
+    margin-bottom: 0.25rem !important;
+    /* Bottom margin to prevent cutting */
 }
 
 /* Toggle button styling */
@@ -339,6 +357,43 @@ body {
     transform: translateY(-1px);
 }
 
+/* QueryLog Input Loading Overlay */
+.querylog-input-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+}
+
+.querylog-input-loading .loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.75rem;
+}
+
+.querylog-input-loading .loading-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Dark mode input loading overlay */
+[data-theme="dark"] .querylog-input-loading {
+    background: rgba(52, 73, 94, 0.9);
+}
+
 /* JSON Formatter - optimized for SPA */
 .tool-content.json-layout {
     display: grid;
@@ -354,7 +409,8 @@ body {
 }
 
 .tool-panel.vm-layout .vm-main-content {
-    height: calc(100vh - 10rem); /* Fixed height for SPA */
+    height: calc(100vh - 10rem);
+    /* Fixed height for SPA */
 }
 
 .full-width {
@@ -362,16 +418,21 @@ body {
 }
 
 .stats-section {
-    flex-shrink: 0; /* Don't shrink stats */
-    margin-bottom: 0.5rem; /* Small spacing after stats */
+    flex-shrink: 0;
+    /* Don't shrink stats */
+    margin-bottom: 0.5rem;
+    /* Small spacing after stats */
 }
 
 .queries-section {
-    flex: 1; /* Take remaining space */
-    min-height: 0; /* Allow scrolling */
+    flex: 1;
+    /* Take remaining space */
+    min-height: 0;
+    /* Allow scrolling */
     display: flex;
     flex-direction: column;
-    margin-top: 0; /* No extra top margin */
+    margin-top: 0;
+    /* No extra top margin */
 }
 
 @media (max-width: 768px) {
@@ -384,8 +445,10 @@ body {
 .output-section {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Important for flex children */
-    flex: 1; /* Take equal space */
+    min-height: 0;
+    /* Important for flex children */
+    flex: 1;
+    /* Take equal space */
 }
 
 label {
@@ -397,19 +460,23 @@ label {
 
 textarea {
     min-height: 200px;
-    max-height: calc(100vh - 20rem); /* Constrain for SPA */
+    max-height: calc(100vh - 20rem);
+    /* Constrain for SPA */
     padding: 15px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     line-height: 1.5;
-    resize: none; /* Disable resize to prevent overflow */
+    resize: none;
+    /* Disable resize to prevent overflow */
     transition: border-color 0.3s ease;
     background: var(--bg-primary);
     color: var(--text-primary);
-    flex: 1; /* Take available space in flex containers */
-    overflow-y: auto; /* Internal scrolling only */
+    flex: 1;
+    /* Take available space in flex containers */
+    overflow-y: auto;
+    /* Internal scrolling only */
 }
 
 textarea:focus {
@@ -569,7 +636,8 @@ button:active {
     background: linear-gradient(135deg, var(--accent-color), var(--bg-gradient-end));
     color: white;
     border-radius: 4px;
-    margin-bottom: 0.5rem; /* Small margin for visual separation */
+    margin-bottom: 0.5rem;
+    /* Small margin for visual separation */
     font-size: 0.8rem;
     flex-wrap: wrap;
     align-items: center;
@@ -629,9 +697,11 @@ button:active {
 
 #queries-table {
     flex: 1;
-    overflow-y: auto; /* Only queries table scrolls */
+    overflow-y: auto;
+    /* Only queries table scrolls */
     min-height: 400px;
-    max-height: calc(100vh - 8rem); /* Even more space for queries */
+    max-height: calc(100vh - 8rem);
+    /* Even more space for queries */
 }
 
 .queries-header {
@@ -685,7 +755,8 @@ button:active {
     background: var(--bg-primary);
     color: var(--text-primary);
     transition: border-color 0.3s ease;
-    height: 32px; /* Match toggle switch height */
+    height: 32px;
+    /* Match toggle switch height */
 }
 
 .query-search-input:focus {
@@ -733,12 +804,12 @@ button:active {
         align-items: stretch;
         gap: 0.75rem;
     }
-    
+
     .search-container {
         max-width: none;
         min-width: auto;
     }
-    
+
     .query-controls {
         justify-content: center;
     }
@@ -820,7 +891,8 @@ input:checked+.slider:before {
     padding: 0.4rem 0.75rem;
     background: var(--bg-tertiary);
     border-radius: 4px;
-    margin-bottom: 0.1rem; /* Minimal margin */
+    margin-bottom: 0.1rem;
+    /* Minimal margin */
     font-size: 0.75rem;
     color: var(--text-secondary);
     border-left: 3px solid var(--accent-color);
@@ -963,7 +1035,8 @@ input:checked+.slider:before {
     right: 20px;
     z-index: 10000;
     display: flex;
-    flex-direction: column-reverse; /* Stack from bottom up */
+    flex-direction: column-reverse;
+    /* Stack from bottom up */
     gap: 10px;
     max-width: 400px;
     pointer-events: none;
@@ -1047,6 +1120,7 @@ input:checked+.slider:before {
     from {
         transform: scaleX(1);
     }
+
     to {
         transform: scaleX(0);
     }
@@ -1097,6 +1171,7 @@ input:checked+.slider:before {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }
@@ -1110,16 +1185,16 @@ input:checked+.slider:before {
         left: 10px;
         max-width: none;
     }
-    
+
     .notification {
         min-width: auto;
         max-width: none;
     }
-    
+
     .notification-content {
         padding: 12px;
     }
-    
+
     .notification-message {
         font-size: 13px;
     }
@@ -1263,6 +1338,16 @@ input:checked+.slider:before {
     text-overflow: ellipsis;
 }
 
+.history-note {
+    font-size: 0.75rem;
+    color: var(--warning-color);
+    font-style: italic;
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: rgba(243, 156, 18, 0.1);
+    border-radius: 4px;
+}
+
 .history-delete {
     background: var(--error-color);
     color: white;
@@ -1366,7 +1451,8 @@ input:checked+.slider:before {
     border: 1px solid var(--border-color);
     margin-bottom: 0.5rem;
     flex-shrink: 0;
-    min-height: 52px; /* Fixed container height */
+    min-height: 52px;
+    /* Fixed container height */
 }
 
 .vm-status-compact {
@@ -1392,7 +1478,7 @@ input:checked+.slider:before {
     font: inherit;
     cursor: pointer;
     outline: inherit;
-    
+
     /* Common button styles */
     display: inline-flex;
     align-items: center;
@@ -1450,7 +1536,8 @@ input:checked+.slider:before {
     border-radius: 6px;
     border: 1px solid var(--border-color);
     margin-bottom: 0.5rem;
-    flex-shrink: 0; /* Don't shrink */
+    flex-shrink: 0;
+    /* Don't shrink */
 }
 
 .vm-settings-form-compact.hidden {
@@ -1488,7 +1575,8 @@ input:checked+.slider:before {
     gap: 1rem;
     flex: 1;
     min-height: 0;
-    max-height: calc(100vh - 8rem); /* Constrain height for SPA */
+    max-height: calc(100vh - 8rem);
+    /* Constrain height for SPA */
 }
 
 /* File Explorer Panel */
@@ -1501,7 +1589,8 @@ input:checked+.slider:before {
     overflow: hidden;
     min-height: 0;
     height: 100%;
-    max-height: calc(100vh - 12rem); /* Constrain for SPA */
+    max-height: calc(100vh - 12rem);
+    /* Constrain for SPA */
 }
 
 .explorer-header {
@@ -1531,7 +1620,10 @@ input:checked+.slider:before {
 }
 
 /* Standardized File Explorer Buttons */
-.nav-history-btn, .star-btn, .bookmarks-btn, .browse-btn {
+.nav-history-btn,
+.star-btn,
+.bookmarks-btn,
+.browse-btn {
     height: 32px;
     border-radius: 4px;
     cursor: pointer;
@@ -1594,14 +1686,16 @@ input:checked+.slider:before {
 }
 
 /* Star and Bookmarks Buttons */
-.star-btn, .bookmarks-btn {
+.star-btn,
+.bookmarks-btn {
     background: var(--bg-primary);
     color: var(--text-primary);
     padding: 0;
     min-width: 32px;
 }
 
-.star-btn:hover, .bookmarks-btn:hover {
+.star-btn:hover,
+.bookmarks-btn:hover {
     background: var(--accent-color);
     color: white;
     border-color: var(--accent-color);
@@ -1626,8 +1720,10 @@ input:checked+.slider:before {
     overflow-y: auto;
     background: var(--bg-primary);
     min-height: 0;
-    height: 0; /* Force flex shrinking */
-    max-height: calc(100vh - 15rem); /* Constrain height */
+    height: 0;
+    /* Force flex shrinking */
+    max-height: calc(100vh - 15rem);
+    /* Constrain height */
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
     position: relative;
@@ -1666,8 +1762,13 @@ input:checked+.slider:before {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Dark mode loading overlay */
@@ -2326,19 +2427,23 @@ input:checked+.slider:before {
 
     .vm-main-content {
         grid-template-columns: 1fr;
-        max-height: none; /* Allow scrolling on mobile */
+        max-height: none;
+        /* Allow scrolling on mobile */
     }
-    
+
     .tool-panel {
-        position: relative; /* Reset positioning on mobile */
-        height: auto; /* Allow scrolling on mobile */
+        position: relative;
+        /* Reset positioning on mobile */
+        height: auto;
+        /* Allow scrolling on mobile */
         overflow-y: auto;
         opacity: 1;
         visibility: visible;
     }
-    
+
     .tool-panel:not(.active) {
-        display: none; /* Hide inactive panels on mobile */
+        display: none;
+        /* Hide inactive panels on mobile */
     }
 
     .vm-settings-bar {
@@ -2380,4 +2485,20 @@ input:checked+.slider:before {
         gap: 0.5rem;
         align-items: stretch;
     }
+}
+
+
+/* JSON ⇄ PHP Converter Swap Button */
+#swap-direction {
+    background: var(--warning-color);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-width: 40px;
+    transition: all 0.3s ease;
+}
+
+#swap-direction:hover {
+    background: #e67e22;
+    transform: rotate(180deg);
 }
