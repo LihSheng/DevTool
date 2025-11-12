@@ -27,11 +27,15 @@
             </div>
 
             <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tool="dashboard">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
                 <button class="nav-btn" data-tool="json-formatter">
                     <span class="nav-icon">📋</span>
                     <span class="nav-text">JSON Formatter</span>
                 </button>
-                <button class="nav-btn active" data-tool="querylog-analyzer">
+                <button class="nav-btn" data-tool="querylog-analyzer">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">QueryLog Analyzer</span>
                 </button>
@@ -52,6 +56,101 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
+
+            <!-- Dashboard -->
+            <div id="dashboard" class="tool-panel active">
+                <div class="dashboard-container">
+                    <div class="dashboard-header">
+                        <h2>Welcome to Dev Tools</h2>
+                        <p>Your all-in-one developer utilities suite</p>
+                    </div>
+
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-number" id="dash-total-uses">0</div>
+                                <div class="stat-label">Total Uses</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-info">
+                                <div class="stat-number" id="dash-most-used">-</div>
+                                <div class="stat-label">Most Used Tool</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🕐</div>
+                            <div class="stat-info">
+                                <div class="stat-number" id="dash-last-used">Never</div>
+                                <div class="stat-label">Last Activity</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-tools">
+                        <h3>Quick Access</h3>
+                        <div class="tool-cards">
+                            <div class="tool-card" data-tool="json-formatter">
+                                <div class="tool-card-icon">📋</div>
+                                <div class="tool-card-content">
+                                    <h4>JSON Formatter</h4>
+                                    <p>Format, validate, and minify JSON data</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-json-formatter">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card" data-tool="querylog-analyzer">
+                                <div class="tool-card-icon">📊</div>
+                                <div class="tool-card-content">
+                                    <h4>QueryLog Analyzer</h4>
+                                    <p>Analyze Laravel database queries and performance</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-querylog-analyzer">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card" data-tool="vm-connector">
+                                <div class="tool-card-icon">🖥️</div>
+                                <div class="tool-card-content">
+                                    <h4>VM File Connector</h4>
+                                    <p>Browse and preview files from remote servers</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-vm-connector">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card" data-tool="json-to-php">
+                                <div class="tool-card-icon">🔄</div>
+                                <div class="tool-card-content">
+                                    <h4>JSON ⇄ PHP Array</h4>
+                                    <p>Convert between JSON and PHP array syntax</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-json-to-php">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-footer">
+                        <div class="quick-tips">
+                            <h3>💡 Quick Tips</h3>
+                            <ul>
+                                <li>Use <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in JSON/PHP converter for quick conversion</li>
+                                <li>QueryLog Analyzer supports both JSON and PHP array formats</li>
+                                <li>Bookmark frequently used VM paths for quick access</li>
+                                <li>Toggle dark mode with the moon icon in the sidebar</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- JSON Formatter Tool -->
             <div id="json-formatter" class="tool-panel">
@@ -78,7 +177,7 @@
             </div>
 
             <!-- QueryLog Analyzer Tool -->
-            <div id="querylog-analyzer" class="tool-panel active">
+            <div id="querylog-analyzer" class="tool-panel">
 
                 <div class="tool-content querylog-layout">
                     <div class="input-section full-width">
@@ -286,6 +385,7 @@
     </div>
 
     <script src="js/notifications.js"></script>
+    <script src="js/dashboard.js"></script>
     <script src="js/json-formatter.js"></script>
     <script src="js/querylog-analyzer.js"></script>
     <script src="js/vm-connector.js"></script>
