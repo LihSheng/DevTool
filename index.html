@@ -8,6 +8,8 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 
 <body>
@@ -46,6 +48,10 @@
                 <button class="nav-btn" data-tool="json-to-php">
                     <span class="nav-icon">🔄</span>
                     <span class="nav-text">JSON to PHP Array</span>
+                </button>
+                <button class="nav-btn" data-tool="markdown-editor">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Markdown Editor</span>
                 </button>
             </nav>
 
@@ -132,6 +138,17 @@
                                     <p>Convert between JSON and PHP array syntax</p>
                                     <div class="tool-card-stats">
                                         <span class="usage-count" id="usage-json-to-php">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card" data-tool="markdown-editor">
+                                <div class="tool-card-icon">📝</div>
+                                <div class="tool-card-content">
+                                    <h4>Markdown Editor</h4>
+                                    <p>Write and preview markdown with live rendering</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-markdown-editor">0 uses</span>
                                     </div>
                                 </div>
                             </div>
@@ -360,6 +377,82 @@
                 </div>
             </div>
 
+            <!-- Markdown Editor Tool -->
+            <div id="markdown-editor" class="tool-panel">
+                <div class="markdown-top-bar">
+                    <div class="markdown-toolbar">
+                        <button class="md-btn" data-action="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+                        <button class="md-btn" data-action="italic" title="Italic (Ctrl+I)"><em>I</em></button>
+                        <button class="md-btn" data-action="strikethrough" title="Strikethrough"><s>S</s></button>
+                        <div class="toolbar-divider"></div>
+                        <button class="md-btn" data-action="heading" title="Heading">H</button>
+                        <button class="md-btn" data-action="quote" title="Quote">❝</button>
+                        <button class="md-btn" data-action="code" title="Code">{ }</button>
+                        <div class="toolbar-divider"></div>
+                        <button class="md-btn" data-action="list" title="Unordered List">☰</button>
+                        <button class="md-btn" data-action="ordered-list" title="Ordered List">1.</button>
+                        <button class="md-btn" data-action="checklist" title="Checklist">☑</button>
+                        <div class="toolbar-divider"></div>
+                        <button class="md-btn" data-action="link" title="Link">🔗</button>
+                        <button class="md-btn" data-action="image" title="Image">🖼️</button>
+                        <button class="md-btn" data-action="table" title="Table">⊞</button>
+                        <button class="md-btn" data-action="hr" title="Horizontal Rule">―</button>
+                    </div>
+                    <div class="markdown-actions">
+                        <button class="md-btn" id="md-copy-html" title="Copy HTML">📋</button>
+                        <button class="md-btn" id="md-download" title="Download">💾</button>
+                        <button class="md-btn" id="md-clear" title="Clear">🗑️</button>
+                    </div>
+                </div>
+                
+                <div class="markdown-layout">
+                    <div class="markdown-editor-section">
+                        <textarea id="markdown-input" placeholder="# Welcome to Markdown Editor
+
+Start writing your markdown here...
+
+## Features
+- Live preview
+- Syntax highlighting  
+- Export options
+
+```javascript
+console.log('Hello World!');
+```"></textarea>
+                    </div>
+
+                    <div class="markdown-divider">
+                        <div class="view-mode-buttons">
+                            <button class="view-btn active" data-view="split" title="Split View">⊞</button>
+                            <button class="view-btn" data-view="editor" title="Editor Only">◧</button>
+                            <button class="view-btn" data-view="preview" title="Preview Only">◨</button>
+                        </div>
+                    </div>
+
+                    <div class="markdown-preview-section">
+                        <div id="markdown-preview" class="markdown-preview">
+                            <div class="preview-placeholder">
+                                <div class="placeholder-icon">📝</div>
+                                <p>Start typing to see preview</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="markdown-status-bar">
+                    <span id="md-char-count">0 characters</span>
+                    <span class="status-divider">|</span>
+                    <span id="md-word-count">0 words</span>
+                    <span class="status-divider">|</span>
+                    <span id="md-line-count">0 lines</span>
+                    <span class="status-spacer"></span>
+                    <label class="sync-scroll-label">
+                        <input type="checkbox" id="sync-scroll" checked>
+                        <span>Sync Scroll</span>
+                    </label>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -384,12 +477,17 @@
         </div>
     </div>
 
+    <!-- Markdown and Syntax Highlighting Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
     <script src="js/notifications.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/json-formatter.js"></script>
     <script src="js/querylog-analyzer.js"></script>
     <script src="js/vm-connector.js"></script>
     <script src="js/json-to-php.js"></script>
+    <script src="js/markdown-editor.js"></script>
     <script>
         // Navigation functionality
         document.querySelectorAll('.nav-btn').forEach(btn => {

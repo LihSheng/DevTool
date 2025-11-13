@@ -14,7 +14,8 @@ class Dashboard {
                 'json-formatter': 0,
                 'querylog-analyzer': 0,
                 'vm-connector': 0,
-                'json-to-php': 0
+                'json-to-php': 0,
+                'markdown-editor': 0
             }
         };
 
@@ -67,7 +68,8 @@ class Dashboard {
             'json-formatter': 'JSON Formatter',
             'querylog-analyzer': 'QueryLog Analyzer',
             'vm-connector': 'VM Connector',
-            'json-to-php': 'JSON ⇄ PHP'
+            'json-to-php': 'JSON ⇄ PHP',
+            'markdown-editor': 'Markdown Editor'
         };
         return names[toolId] || toolId;
     }
