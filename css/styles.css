@@ -77,6 +77,44 @@ body {
     /* Prevent scrolling */
 }
 
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: fixed;
+    left: 280px;
+    top: 1rem;
+    width: 24px;
+    height: 40px;
+    background: var(--bg-gradient-start);
+    border: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    cursor: pointer;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle:hover {
+    background: var(--bg-gradient-end);
+    width: 28px;
+}
+
+.sidebar-toggle .toggle-icon {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-toggle.collapsed {
+    left: 0;
+}
+
+.sidebar-toggle.collapsed .toggle-icon {
+    transform: rotate(180deg);
+}
+
 /* Sidebar */
 .sidebar {
     width: 280px;
@@ -87,6 +125,16 @@ body {
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 100;
+    transition: transform 0.3s ease, margin-left 0.3s ease;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-280px);
+    margin-left: -280px;
+}
+
+.sidebar.collapsed~.main-content .markdown-top-bar {
+    padding-left: 3rem;
 }
 
 .sidebar-header {
@@ -2733,7 +2781,7 @@ input:checked+.slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1rem 0.5rem 3rem;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
@@ -2912,7 +2960,6 @@ input:checked+.slider:before {
     overflow-x: hidden;
     box-sizing: border-box;
     display: block;
-    vertical-align: top;
 }
 
 .markdown-preview {
