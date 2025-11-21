@@ -2837,16 +2837,19 @@ input:checked+.slider:before {
     flex-direction: column;
     padding: 0 !important;
     overflow: hidden;
+    height: 100vh;
 }
 
 .markdown-layout {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     grid-template-areas: "editor divider preview";
-    flex: 1;
+    flex: 1 1 auto;
     gap: 0;
     overflow: hidden;
     position: relative;
+    min-height: 0;
+    height: 100%;
 }
 
 .markdown-editor-section {
@@ -2889,6 +2892,7 @@ input:checked+.slider:before {
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-height: 100%;
     min-height: 0;
     overflow: hidden;
     margin: 0;
@@ -2963,10 +2967,12 @@ input:checked+.slider:before {
 }
 
 .markdown-preview {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
+    max-height: 100%;
     padding: 2rem;
     overflow-y: auto;
+    overflow-x: hidden;
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.8;

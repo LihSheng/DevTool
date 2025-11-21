@@ -58,6 +58,10 @@
                     <span class="nav-icon">📝</span>
                     <span class="nav-text">Markdown Editor</span>
                 </button>
+                <button class="nav-btn" data-tool="html-formatter">
+                    <span class="nav-icon">🌐</span>
+                    <span class="nav-text">HTML Formatter</span>
+                </button>
             </nav>
 
             <div class="sidebar-footer">
@@ -154,6 +158,17 @@
                                     <p>Write and preview markdown with live rendering</p>
                                     <div class="tool-card-stats">
                                         <span class="usage-count" id="usage-markdown-editor">0 uses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card" data-tool="html-formatter">
+                                <div class="tool-card-icon">🌐</div>
+                                <div class="tool-card-content">
+                                    <h4>HTML Formatter</h4>
+                                    <p>Format, minify, and validate HTML code</p>
+                                    <div class="tool-card-stats">
+                                        <span class="usage-count" id="usage-html-formatter">0 uses</span>
                                     </div>
                                 </div>
                             </div>
@@ -458,6 +473,30 @@ console.log('Hello World!');
                 </div>
             </div>
 
+            <!-- HTML Formatter Tool -->
+            <div id="html-formatter" class="tool-panel">
+                <div class="tool-content json-layout">
+                    <div class="input-section">
+                        <label for="html-input">Raw HTML:</label>
+                        <textarea id="html-input" placeholder="Paste your HTML here..."></textarea>
+                        <div class="button-group">
+                            <button id="format-html">Format HTML</button>
+                            <button id="minify-html">Minify</button>
+                            <button id="validate-html">Validate</button>
+                            <button id="clear-html">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="output-section">
+                        <label for="html-output">Formatted HTML:</label>
+                        <textarea id="html-output" readonly></textarea>
+                        <button id="copy-html">Copy to Clipboard</button>
+                    </div>
+                </div>
+
+                <div id="html-status" class="status-message"></div>
+            </div>
+
         </main>
     </div>
 
@@ -493,6 +532,7 @@ console.log('Hello World!');
     <script src="js/vm-connector.js"></script>
     <script src="js/json-to-php.js"></script>
     <script src="js/markdown-editor.js"></script>
+    <script src="js/html-formatter.js"></script>
     <script>
         // Navigation functionality
         document.querySelectorAll('.nav-btn').forEach(btn => {
