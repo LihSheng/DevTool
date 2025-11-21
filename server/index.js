@@ -10,7 +10,11 @@ const mimeTypes = {
     '.html': 'text/html',
     '.css': 'text/css',
     '.js': 'application/javascript',
-    '.json': 'application/json'
+    '.json': 'application/json',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.ico': 'image/x-icon'
 };
 
 // VM Connection function
@@ -252,10 +256,12 @@ const server = http.createServer((req, res) => {
         return;
     }
     
-    // Existing static file serving
-    let filePath = '.' + url.pathname;
-    if (filePath === './') {
-        filePath = './index.html';
+    // Serve static files from dist directory
+    let filePath = path.join(__dirname, '../dist', url.pathname);
+    
+    // If root, serve index.html
+    if (url.pathname === '/') {
+        filePath = path.join(__dirname, '../dist/index.html');
     }
 
     const extname = String(path.extname(filePath)).toLowerCase();
@@ -264,8 +270,21 @@ const server = http.createServer((req, res) => {
     fs.readFile(filePath, (error, content) => {
         if (error) {
             if (error.code === 'ENOENT') {
-                res.writeHead(404);
-                res.end('File not found');
+                // SPA Fallback: serve index.html for non-API routes that don't match a file
+                if (!url.pathname.startsWith('/api')) {
+                    fs.readFile(path.join(__dirname, '../dist/index.html'), (err, indexContent) => {
+                        if (err) {
+                            res.writeHead(500);
+                            res.end('Error loading index.html');
+                        } else {
+                            res.writeHead(200, { 'Content-Type': 'text/html' });
+                            res.end(indexContent, 'utf-8');
+                        }
+                    });
+                } else {
+                    res.writeHead(404);
+                    res.end('API endpoint not found');
+                }
             } else {
                 res.writeHead(500);
                 res.end('Server error: ' + error.code);
