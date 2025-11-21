@@ -21,8 +21,16 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTool, onToolChange }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true;
+    // Check local storage first
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) {
+        return saved === 'dark';
+      }
+      // If no saved preference, check system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true; // Default to dark
   });
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -30,14 +38,28 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTool, onToolChange }) =
   });
 
   useEffect(() => {
+    const root = window.document.documentElement;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
+
+  // Listen for system preference changes if no user override is set (optional, but good practice)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setDarkMode(e.matches);
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', String(sidebarCollapsed));

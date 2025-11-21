@@ -67,7 +67,7 @@ const JsonFormatter: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
+    <div className="h-[calc(100vh-6rem)] flex flex-col">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span className="text-blue-500">📋</span> JSON Formatter

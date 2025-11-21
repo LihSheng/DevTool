@@ -172,7 +172,7 @@ const VmConnector: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)] flex flex-col space-y-4">
+    <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span className="text-green-500">🖥️</span> VM File Connector
@@ -319,7 +319,7 @@ const VmConnector: React.FC = () => {
                   className="flex items-center gap-1 px-2 py-1 text-xs bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded-md whitespace-nowrap hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
                 >
                   <Star size={10} fill="currentColor" />
-                  {b.split('/').pop() || b}
+                  {typeof b === 'string' ? (b.split('/').pop() || b) : String(b)}
                 </button>
               ))}
             </div>

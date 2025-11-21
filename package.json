@@ -32,12 +32,14 @@
     "ssh2": "^1.15.0"
   },
   "devDependencies": {
+    "@executeautomation/playwright-mcp-server": "^1.0.6",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
     "concurrently": "^9.2.1",
+    "playwright": "^1.56.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3",

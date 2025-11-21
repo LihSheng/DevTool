@@ -81,7 +81,7 @@ const QueryLogAnalyzer: React.FC = () => {
   }, [queries]);
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-6rem)] flex flex-col space-y-4">
+    <div className="h-[calc(100vh-6rem)] flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span className="text-purple-500">📊</span> QueryLog Analyzer
