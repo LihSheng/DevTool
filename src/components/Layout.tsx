@@ -10,7 +10,8 @@ import {
   Moon, 
   Sun, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -73,6 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTool, onToolChange }) =
     { id: 'json-to-php', label: 'JSON to PHP Array', icon: ArrowRightLeft },
     { id: 'markdown-editor', label: 'Markdown Editor', icon: FileText },
     { id: 'html-formatter', label: 'HTML Formatter', icon: Code },
+    { id: 'api-tester', label: 'API Endpoint Tester', icon: Zap },
   ];
 
   return (

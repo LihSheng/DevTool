@@ -8,9 +8,31 @@ const JsonToPhp: React.FC = () => {
   const [mode, setMode] = useState<'jsonToPhp' | 'phpToJson'>('jsonToPhp');
   const [copied, setCopied] = useState(false);
 
+  const cleanJson = (json: string): string => {
+    // Remove trailing commas before closing braces/brackets
+    let cleaned = json
+      .replace(/,(\s*[}\]])/g, '$1')  // Remove trailing commas
+      .replace(/,(\s*,)/g, '$1');     // Remove duplicate commas
+    
+    return cleaned;
+  };
+
   const convertJsonToPhp = (json: string): string => {
     try {
-      const obj = JSON.parse(json);
+      // First try to parse as-is
+      let obj;
+      try {
+        obj = JSON.parse(json);
+      } catch (firstError) {
+        // If parsing fails, try cleaning the JSON first
+        const cleaned = cleanJson(json);
+        try {
+          obj = JSON.parse(cleaned);
+        } catch (secondError) {
+          // If still fails, provide a helpful error message
+          throw new Error('Invalid JSON input. Please check for syntax errors like trailing commas, missing quotes, or unclosed brackets.');
+        }
+      }
       
       const toPhp = (data: any, indentLevel: number = 0): string => {
         const indent = '    '.repeat(indentLevel);
@@ -40,7 +62,7 @@ const JsonToPhp: React.FC = () => {
 
       return toPhp(obj);
     } catch (e) {
-      throw new Error('Invalid JSON input');
+      throw e;
     }
   };
 
