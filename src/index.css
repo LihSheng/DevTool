@@ -13,3 +13,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Markdown Editor Theme Customization */
+/* Let the library handle colors via data-color-mode attribute */
+/* Only add layout and spacing adjustments if needed */
+
+.w-md-editor-toolbar li button:hover {
+  opacity: 0.8;
+}
+

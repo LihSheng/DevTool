@@ -1,14 +1,32 @@
-import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css'; // Import highlight.js styles
-import { Copy, Trash2, Eye, EyeOff, Download, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import MDEditor from '@uiw/react-md-editor';
+import { Copy, Trash2, Download, Check, FileText, Eye, Columns } from 'lucide-react';
+
+type EditorMode = 'edit' | 'live' | 'preview';
 
 const MarkdownEditor: React.FC = () => {
-  const [markdown, setMarkdown] = useState<string>('# Hello World\n\nWrite your **markdown** here!');
-  const [showPreview, setShowPreview] = useState(true);
+  const [markdown, setMarkdown] = useState<string>('# Hello World\n\nWrite your **markdown** here!\n\n## Features\n- Rich text editing\n- Live preview\n- Syntax highlighting\n\n```javascript\nconst greeting = "Hello, World!";\nconsole.log(greeting);\n```');
+  const [mode, setMode] = useState<EditorMode>('live');
   const [copied, setCopied] = useState(false);
+
+  // Detect and apply theme for markdown editor
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    document.documentElement.setAttribute('data-color-mode', isDark ? 'dark' : 'light');
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains('dark');
+      document.documentElement.setAttribute('data-color-mode', isDark ? 'dark' : 'light');
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const handleCopy = () => {
     if (!markdown) return;
@@ -36,71 +54,93 @@ const MarkdownEditor: React.FC = () => {
           <span className="text-gray-700 dark:text-gray-300">📝</span> Markdown Editor
         </h2>
         <div className="flex gap-2">
+          {/* Mode Toggle Buttons */}
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <button 
+              onClick={() => setMode('edit')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-all ${
+                mode === 'edit' 
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Raw Markdown Editor"
+            >
+              <FileText size={16} />
+              <span className="hidden sm:inline">Raw</span>
+            </button>
+            <button 
+              onClick={() => setMode('live')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-all ${
+                mode === 'live' 
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Split View (Editor + Preview)"
+            >
+              <Columns size={16} />
+              <span className="hidden sm:inline">Split</span>
+            </button>
+            <button 
+              onClick={() => setMode('preview')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-all ${
+                mode === 'preview' 
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Preview Only"
+            >
+              <Eye size={16} />
+              <span className="hidden sm:inline">Preview</span>
+            </button>
+          </div>
+
+          {/* Action Buttons */}
           <button 
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            onClick={handleCopy}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              copied 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
           >
-            {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
-            {showPreview ? 'Hide Preview' : 'Show Preview'}
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+            <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
           </button>
           <button 
             onClick={handleDownload}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             <Download size={16} />
-            Download
+            <span className="hidden sm:inline">Download</span>
+          </button>
+          <button 
+            onClick={() => setMarkdown('')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700 rounded-lg transition-colors"
+            title="Clear"
+          >
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
 
-      <div className={`flex-1 grid gap-4 min-h-0 ${showPreview ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-        {/* Editor Section */}
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="p-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">Editor</span>
-            <div className="flex gap-1">
-              <button 
-                onClick={handleCopy}
-                className={`p-1.5 rounded-md transition-colors ${
-                  copied ? 'text-green-500' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                }`}
-                title="Copy Markdown"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-              </button>
-              <button 
-                onClick={() => setMarkdown('')}
-                className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                title="Clear"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-          <textarea
+      {/* Editor Section */}
+      <div className="flex-1 min-h-0 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="h-full">
+          <MDEditor
             value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-            placeholder="Type your markdown here..."
-            className="flex-1 w-full p-4 font-mono text-sm bg-white dark:bg-gray-800 outline-none resize-none"
+            onChange={(val) => setMarkdown(val || '')}
+            preview={mode}
+            height="100%"
+            visibleDragbar={false}
+            hideToolbar={mode === 'preview'}
+            textareaProps={{
+              placeholder: 'Type your markdown here...'
+            }}
+            previewOptions={{
+              rehypePlugins: [],
+            }}
           />
         </div>
-
-        {/* Preview Section */}
-        {showPreview && (
-          <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2">Preview</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-8 prose dark:prose-invert max-w-none">
-              <ReactMarkdown 
-                remarkPlugins={[remarkGfm]} 
-                rehypePlugins={[rehypeHighlight]}
-              >
-                {markdown}
-              </ReactMarkdown>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
